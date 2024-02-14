@@ -1,0 +1,2 @@
+id,username,email,password,user_roles
+1,user,user@mail.com,$2a$10$nwzzqyr4aAsmmBYEe4XZ8OQ9pq/yEAtvEOwMRAXmDcum5Tqkji90S,ROLE_ADMIN
