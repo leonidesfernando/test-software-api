@@ -1,0 +1,29 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="Suíte-Tests por Classes" parallel="methods" thread-count="10" verbose="1" data-provider-thread-count="6">
+    <test name="Teste por classes">
+        <classes>
+            <class name="br.com.home.lab.softwaretesting.cucumber.testrunner.TestRunnerManager"></class>
+        </classes>
+    </test>
+    
+    <test name="Testing Services - disable due a issue wiht JDK 17 and mockito" enabled="false">
+        <classes>
+            <class name="br.com.home.lab.softwaretesting.service.LancamentoServiceTest"></class>
+        </classes>
+    </test>
+    <test name="Testin Models">
+        <packages>
+            <package name="br.com.home.lab.softwaretesting.model"></package>
+        </packages>
+    </test>
+
+    <test name="Testing Converters">
+        <classes>
+            <class name="br.com.home.lab.softwaretesting.converter.MoneyToStringConverterTest"></class>
+            <class name="br.com.home.lab.softwaretesting.converter.MoneyDeserializeTest"></class>
+            <class name="br.com.home.lab.softwaretesting.converter.StringToDateConverterTest"></class>
+            <class name="br.com.home.lab.softwaretesting.converter.StringToMoneyConverterTest"></class>
+        </classes>
+    </test>
+</suite>
+

@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>br.com.home.lab</groupId>
-	<artifactId>teste-software</artifactId>
+	<artifactId>teste-software-api</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
@@ -320,13 +320,12 @@
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>${jacoco.maven.plugin.version}</version>
-				<configuration>
+				<!-- configuration>
 					<excludes>
 						<exclude>br/com/home/lab/softwaretesting/ServletInitializer.class</exclude>
 						<exclude>br/com/home/lab/softwaretesting/TesteSoftwareApplication.class</exclude>
-						<exclude>br/com/home/lab/softwaretesting/WebConfigurer.class</exclude>
 					</excludes>
-				</configuration>
+				</configuration -->
 				<executions>
 					<execution>
 						<id>prepare-agent</id>

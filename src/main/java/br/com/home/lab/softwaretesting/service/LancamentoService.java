@@ -32,7 +32,7 @@ public class LancamentoService {
 
     @PersistenceContext
     private EntityManager entityManager;
-    static final int MAXIMO_LANCAMENTOS = 25;
+    static final int MAXIMO_LANCAMENTOS = 10;
     private LancamentoRepository lancamentoRepository;
 
 
@@ -99,8 +99,7 @@ public class LancamentoService {
 
     public int calculaNumeroPaginas(int totalRegistros) {
         int numero = (totalRegistros / tamanhoPagina());
-        if (totalRegistros > 0) {
-            if((totalRegistros % tamanhoPagina()) > 0)
+        if (totalRegistros > 0 && (totalRegistros % tamanhoPagina()) > 0){
                 numero++;
         }
         return numero;

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %p %m %ex%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Restrict logging for level -->
+    <logger name="io" level="WARN" />
+    <logger name="org.springframework" level="WARN" />
+    <logger name="org" level="WARN" />
+    <logger name="br" level="INFO" />
+
+    <root level="WARN">
+        <appender-ref ref="stdout" />
+    </root>
+</configuration>
