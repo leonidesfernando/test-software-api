@@ -2,15 +2,14 @@ package br.com.home.lab.softwaretesting.converter;
 
 import com.fasterxml.jackson.core.JsonParser;
 import lombok.SneakyThrows;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-import static org.testng.Assert.assertEquals;
 
 
 public class MoneyDeserializeTest {
