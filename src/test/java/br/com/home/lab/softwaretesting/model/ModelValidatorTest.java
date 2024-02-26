@@ -1,40 +1,47 @@
 package br.com.home.lab.softwaretesting.model;
 
 import br.com.home.lab.softwaretesting.util.LancamentoGen;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @SpringBootTest
-public class ModelValidatorTest {
+@Execution(ExecutionMode.CONCURRENT)
+class ModelValidatorTest {
 
     @Mock
     private ModelValidator modelValidator;
 
-    @BeforeClass
+    @BeforeAll
     public void init(){
         MockitoAnnotations.initMocks(this);
     }
 
-    @Test(enabled = false)
-    public void getInstanceTest(){
+    @Test
+    @Disabled
+    void getInstanceTest(){
         when(ModelValidator.getInstance()).thenCallRealMethod();
         assertThat(ModelValidator.getInstance()).isNotNull();
     }
 
     @Test
-    public void createValidatorTest(){
+    void createValidatorTest(){
         when(modelValidator.createValidator()).thenCallRealMethod();
         assertThat(modelValidator.createValidator()).isNotNull();
     }
 
     @Test
-    public void validate(){
+    void validate(){
         var lancamento = LancamentoGen.novaDespesa();
         ModelValidator.getInstance().validate(lancamento);
     }

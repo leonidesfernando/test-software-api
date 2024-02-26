@@ -1,46 +1,51 @@
 package br.com.home.lab.softwaretesting.converter;
 
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class StringToDateConverterTest {
+@Execution(ExecutionMode.CONCURRENT)
+class StringToDateConverterTest {
 
-    @DataProvider(name = "values", parallel = true)
-    protected Object[][] values(Method method){
-        switch (method.getName()){
-            case "convert" -> {
-                return new Object[][]{
-                        {"11/11/2020", ConvertersHelper.get(11, 11, 2020)},
-                        {"1/1/2021", ConvertersHelper.get(1, 1, 2021)},
-                        {"01/02/2022", ConvertersHelper.get(1, 2, 2022)},
-                        {"", null},
-                        {" ", null},
-                        {null, null}
-                };
-            }
-            case "invalidConvertions" -> {
-                return new Object[][]{{"389434"}, {"saklfj"}, {"a44/4/90"}};
-            }
-            default ->
-                throw new IllegalArgumentException("Unsupported method: " + method.getName());
-        }
-    }
-
-    @Test(dataProvider = "values")
-    public void convert(String input, Date expected){
+    @ParameterizedTest
+    @MethodSource("passiveConversionValues")
+    void convert(String input, Date expected) {
         StringToDateConverter converter = new StringToDateConverter();
         assertThat(converter.convert(input)).isEqualTo(expected);
     }
 
-    @Test(dataProvider = "values", expectedExceptions = ParseException.class)
-    public void invalidConvertions(String input){
-        StringToDateConverter converter = new StringToDateConverter();
-        converter.convert(input);
+    @ParameterizedTest
+    @MethodSource("invalidConversionValues")
+    void invalidConvertions(String input) {
+        final StringToDateConverter converter = new StringToDateConverter();
+        assertThrows(ParseException.class, () -> converter.convert(input));
+
+    }
+
+    private static Stream<Arguments> passiveConversionValues() {
+        return Stream.of(
+                Arguments.of("11/11/2020", ConvertersHelper.get(11, 11, 2020)),
+                Arguments.of("1/1/2021", ConvertersHelper.get(1, 1, 2021)),
+                Arguments.of("01/02/2022", ConvertersHelper.get(1, 2, 2022)),
+                Arguments.of("", null), Arguments.of(" ", null),
+                Arguments.of(null, null)
+        );
+    }
+
+    private static Stream<Arguments> invalidConversionValues() {
+        return Stream.of(
+                Arguments.of("389434"),
+                Arguments.of("saklfj"),
+                Arguments.of("a44/4/90")
+        );
     }
 }

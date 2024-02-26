@@ -1,15 +1,18 @@
 package br.com.home.lab.softwaretesting.model;
 
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.testng.annotations.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-public class LancamentoTest {
+@Execution(ExecutionMode.CONCURRENT)
+class LancamentoTest {
 
     @Test
-    public void equalsTest(){
+    void equalsTest(){
         var l1 = new Lancamento();
         var l2 = new Lancamento();
         l1.setId(1);
@@ -18,7 +21,7 @@ public class LancamentoTest {
     }
 
     @Test
-    public void notEqualsTest(){
+    void notEqualsTest(){
         var l1 = new Lancamento();
         var l2 = new Lancamento();
         l1.setId(2);
