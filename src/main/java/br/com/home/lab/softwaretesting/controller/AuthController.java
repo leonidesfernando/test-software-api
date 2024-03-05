@@ -75,7 +75,7 @@ public class AuthController {
     public ResponseEntity<MessageResponse> logoutUser() {
         ResponseCookie cookie = jwtUtil.getCleanJwtCookie();
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(new MessageResponse("You've been signed out!"));
+                .body(new MessageResponse("user.signed.out"));
     }
 
     @PostMapping("/signup")
@@ -83,13 +83,13 @@ public class AuthController {
         if (Boolean.TRUE.equals(userRepository.existsByUsername(signUpRequest.username()))) {
             return ResponseEntity
                     .badRequest()
-                    .body(new MessageResponse("Error: Username is already taken!"));
+                    .body(new MessageResponse("username.taken"));
         }
 
         if (Boolean.TRUE.equals(userRepository.existsByEmail(signUpRequest.email()))) {
             return ResponseEntity
                     .badRequest()
-                    .body(new MessageResponse("Error: Email is already in use!"));
+                    .body(new MessageResponse("email.taken"));
         }
 
         // Create new user's account
@@ -129,6 +129,6 @@ public class AuthController {
 
         user.setRoles(roles);
         userRepository.save(user);
-        return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+        return ResponseEntity.ok(new MessageResponse("user.registered.successfully"));
     }
 }
