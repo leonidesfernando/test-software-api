@@ -1,0 +1,1071 @@
+{
+	"info": {
+		"_postman_id": "d0207a8e-2374-4671-a599-06ec6948cbf9",
+		"name": "Test Software API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "2285760"
+	},
+	"item": [
+		{
+			"name": "API - POST /api/auth/signup - DISABLED",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = pm.response.json();\r",
+							"/* **** Disabled - method should be POST\r",
+							"pm.test(\"Signup status code is 200\", () => {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validating response body\", () => {\r",
+							"  pm.expect(jsonData.message).to.be.eq(\"user.registered.successfully\");\r",
+							"});\r",
+							"*/\r",
+							"\r",
+							"pm.test(\"Disabled signup status code is 405/401\", () => {\r",
+							"  pm.expect(jsonData.status > 400);\r",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"zole\",\r\n    \"email\": \"zole@mail.com\",\r\n    \"password\": \"a\",\r\n    \"roles\": [\r\n        \"user\"\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/auth/signup",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"signup"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API - DELETE - /api/entries/removeAll - DISABLED",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = pm.response.json();\r",
+							"/* **** Disabled - method should be DELETE\r",
+							"\r",
+							"pm.test(\"Remove all status code is 200\", () => {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validating response body\", () => {\r",
+							"  pm.expect(jsonData.message).to.be.eq(\"all.entries.have.been.removed\");\r",
+							"});\r",
+							"\r",
+							"*/\r",
+							"pm.test(\"Disabled removeAll status code is 405/401\", () => {\r",
+							"  pm.expect(jsonData.status > 400);\r",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{tokenAuthorization}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/api/entries/removeAll",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"entries",
+						"removeAll"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API - POST /api/auth/signin",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = pm.response.json();\r",
+							"pm.test(\"Signin status code is 200\", () => {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validating response body\", () => {\r",
+							"  pm.expect(jsonData.token).to.be.not.null;\r",
+							"\r",
+							"  pm.environment.set(\"token\", jsonData.token);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"username\": \"{{user}}\",\r\n    \"password\": \"{{password}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/auth/signin",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"signin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API - POST /api/entries/add",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let moment = require('moment');\r",
+							"\r",
+							"const currentDate = moment();\r",
+							"const month = currentDate.month()+1;\r",
+							"let day = _.random(1, (month == 2) ? 27 : 30);\r",
+							"let year = currentDate.year();\r",
+							"const monthStr = \"\" + (month <= 9 ? \"0\"+month : month);\r",
+							"\r",
+							"pm.environment.set(\"pre_dataLancamento\", day+\"/\"+monthStr+\"/\"+year)\r",
+							"//console.log(pm.environment.get('dataLancamento'))\r",
+							"\r",
+							"// Pick-up the entry type\r",
+							"const types = [\"EXPENSE\", \"INCOME\",\"TRANSF\"];\r",
+							"const index = _.random(0, types.length-1);\r",
+							"pm.environment.set(\"pre_tipoLancamento\", types[index]);\r",
+							"\r",
+							"// pick -up category\r",
+							"const categories = [\"FOOD\",\"WAGE\",\"LEISURE\",\"PHONE_INTERNET\",\"CAR\",\r",
+							"                    \"LOAN\",\"INVESTIMENTS\", \"CLOTHING\",\"OTHER\"];\r",
+							"const categoryIindex = _.random(0, categories.length-1);\r",
+							"pm.environment.set(\"pre_category\", categories[categoryIindex]);\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							"// description\r",
+							"pm.environment.set(\"pre_description\", \"Postman \" + pm.variables.replaceIn(\"{{$randomNoun}}\"));\r",
+							"\r",
+							"\r",
+							"// price\r",
+							"let price = (_.random(100, 1000)/10+'').replace('.', ',');\r",
+							"pm.environment.set(\"pre_price\", price);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = pm.response.json();\r",
+							"pm.test(\"Add status code is 200\", () => {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validating response body\", () => {\r",
+							"  pm.expect(jsonData.message).to.be.eq(\"entry.added\");\r",
+							"});\r",
+							"\r",
+							"pm.environment.set(\"entryId\", jsonData.id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{tokenAuthorization}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"categoria\": \"{{pre_category}}\",\r\n    \"valor\": \"{{pre_price}}\",\r\n    \"descricao\": \"{{pre_description}}\",\r\n    \"dataLancamento\": \"{{pre_dataLancamento}}\",\r\n    \"tipoLancamento\": \"{{pre_tipoLancamento}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/entries/add",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"entries",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API - POST /api/entries/add - For Update",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let moment = require('moment');\r",
+							"\r",
+							"const currentDate = moment();\r",
+							"const month = currentDate.month()+1;\r",
+							"let day = _.random(1, (month == 2) ? 27 : 30);\r",
+							"let year = currentDate.year();\r",
+							"const monthStr = \"\" + (month <= 9 ? \"0\"+month : month);\r",
+							"\r",
+							"pm.environment.set(\"pre_dataLancamento\", day+\"/\"+monthStr+\"/\"+year)\r",
+							"//console.log(pm.environment.get('dataLancamento'))\r",
+							"\r",
+							"// Pick-up the entry type\r",
+							"const types = [\"EXPENSE\", \"INCOME\",\"TRANSF\"];\r",
+							"const index = _.random(0, types.length-1);\r",
+							"pm.environment.set(\"pre_tipoLancamento\", types[index]);\r",
+							"\r",
+							"// pick -up category\r",
+							"const categories = [\"FOOD\",\"WAGE\",\"LEISURE\",\"PHONE_INTERNET\",\"CAR\",\r",
+							"                    \"LOAN\",\"INVESTIMENTS\", \"CLOTHING\",\"OTHER\"];\r",
+							"const categoryIindex = _.random(0, categories.length-1);\r",
+							"pm.environment.set(\"pre_category\", categories[categoryIindex]);\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							"// description\r",
+							"pm.environment.set(\"pre_description\", \"Postman \" + pm.variables.replaceIn(\"{{$randomNoun}}\"));\r",
+							"\r",
+							"\r",
+							"// price\r",
+							"let price = (_.random(100, 1000)/10+'').replace('.', ',');\r",
+							"pm.environment.set(\"pre_price\", price);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = pm.response.json();\r",
+							"pm.test(\"Add status code is 200\", () => {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validating response body\", () => {\r",
+							"  pm.expect(jsonData.message).to.be.eq(\"entry.added\");\r",
+							"});\r",
+							"\r",
+							"pm.environment.set(\"entryUpdateId\", jsonData.id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{tokenAuthorization}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"categoria\": \"{{pre_category}}\",\r\n    \"valor\": \"{{pre_price}}\",\r\n    \"descricao\": \"{{pre_description}}\",\r\n    \"dataLancamento\": \"{{pre_dataLancamento}}\",\r\n    \"tipoLancamento\": \"{{pre_tipoLancamento}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/entries/add",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"entries",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API - GET - /api/entries/get/ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = pm.response.json();\r",
+							"pm.test(\"Get byID status code is 200\", () => {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validating response body\", () => {\r",
+							"  pm.expect(jsonData.id).to.be.not.null\r",
+							"  pm.expect(jsonData.descricao).to.be.not.null\r",
+							"  pm.expect(jsonData.valor).to.be.not.null\r",
+							"  pm.expect(jsonData.dataLancamento).to.be.not.null\r",
+							"  pm.expect(jsonData.tipoLancamento).to.be.not.null\r",
+							"  pm.expect(jsonData.categoria).to.be.not.null\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{tokenAuthorization}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/api/entries/get/{{entryUpdateId}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"entries",
+						"get",
+						"{{entryUpdateId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API - PUT /api/entries/update",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let moment = require('moment');\r",
+							"\r",
+							"const currentDate = moment();\r",
+							"const month = currentDate.month()+1;\r",
+							"let day = _.random(1, (month == 2) ? 27 : 30);\r",
+							"let year = currentDate.year();\r",
+							"const monthStr = \"\" + (month <= 9 ? \"0\"+month : month);\r",
+							"\r",
+							"pm.environment.set(\"pre_dataLancamento\", day+\"/\"+monthStr+\"/\"+year)\r",
+							"//console.log(pm.environment.get('dataLancamento'))\r",
+							"\r",
+							"// Pick-up the entry type\r",
+							"const types = [\"EXPENSE\", \"INCOME\",\"TRANSF\"];\r",
+							"const index = _.random(0, types.length-1);\r",
+							"pm.environment.set(\"pre_tipoLancamento\", types[index]);\r",
+							"\r",
+							"// pick -up category\r",
+							"const categories = [\"FOOD\",\"WAGE\",\"LEISURE\",\"PHONE_INTERNET\", \"CAR\", \"LOAN\", \"INVESTIMENTS\", \"CLOTHING\", \"OTHER\"];\r",
+							"\r",
+							"\r",
+							"const categoryIindex = _.random(0, categories.length-1);\r",
+							"pm.environment.set(\"pre_category\", categories[categoryIindex]);\r",
+							"\r",
+							"// description\r",
+							"pm.environment.set(\"pre_description\", \"Postman \" + pm.variables.replaceIn(\"{{$randomNoun}}\"));\r",
+							"\r",
+							"\r",
+							"// price\r",
+							"let price = (_.random(100, 1000)/10+'').replace('.', ',');\r",
+							"pm.environment.set(\"pre_price\", price);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = pm.response.json();\r",
+							"pm.test(\"Update status code is 200\", () => {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validating response body\", () => {\r",
+							"  pm.expect(jsonData.message).to.be.eq(\"entry.updated\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{tokenAuthorization}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"categoria\": \"{{pre_category}}\",\r\n    \"valor\": \"{{pre_price}}\",\r\n    \"descricao\": \"{{pre_description}}\",\r\n    \"dataLancamento\": \"{{pre_dataLancamento}}\",\r\n    \"tipoLancamento\": \"{{pre_tipoLancamento}}\",\r\n    \"id\": {{entryUpdateId}}\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/entries/update",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"entries",
+						"update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API - POST /api/entries/add - For Delete",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"let moment = require('moment');\r",
+							"\r",
+							"const currentDate = moment();\r",
+							"const month = currentDate.month()+1;\r",
+							"let day = _.random(1, (month == 2) ? 27 : 30);\r",
+							"let year = currentDate.year();\r",
+							"const monthStr = \"\" + (month <= 9 ? \"0\"+month : month);\r",
+							"\r",
+							"pm.environment.set(\"pre_dataLancamento\", day+\"/\"+monthStr+\"/\"+year)\r",
+							"//console.log(pm.environment.get('dataLancamento'))\r",
+							"\r",
+							"// Pick-up the entry type\r",
+							"const types = [\"EXPENSE\", \"INCOME\",\"TRANSF\"];\r",
+							"const index = _.random(0, types.length-1);\r",
+							"pm.environment.set(\"pre_tipoLancamento\", types[index]);\r",
+							"\r",
+							"// pick -up category\r",
+							"const categories = [\"FOOD\",\"WAGE\",\"LEISURE\",\"PHONE_INTERNET\",\"CAR\",\r",
+							"                    \"LOAN\",\"INVESTIMENTS\", \"CLOTHING\",\"OTHER\"];\r",
+							"const categoryIindex = _.random(0, categories.length-1);\r",
+							"pm.environment.set(\"pre_category\", categories[categoryIindex]);\r",
+							"\r",
+							"\r",
+							"\r",
+							"\r",
+							"// description\r",
+							"pm.environment.set(\"pre_description\", \"Postman \" + pm.variables.replaceIn(\"{{$randomNoun}}\"));\r",
+							"\r",
+							"\r",
+							"// price\r",
+							"let price = (_.random(100, 1000)/10+'').replace('.', ',');\r",
+							"pm.environment.set(\"pre_price\", price);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = pm.response.json();\r",
+							"pm.test(\"Add status code is 200\", () => {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validating response body\", () => {\r",
+							"  pm.expect(jsonData.message).to.be.eq(\"entry.added\");\r",
+							"});\r",
+							"pm.environment.set(\"entryDeleteId\", jsonData.id);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{tokenAuthorization}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"categoria\": \"{{pre_category}}\",\r\n    \"valor\": \"{{pre_price}}\",\r\n    \"descricao\": \"{{pre_description}}\",\r\n    \"dataLancamento\": \"{{pre_dataLancamento}}\",\r\n    \"tipoLancamento\": \"{{pre_tipoLancamento}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/entries/add",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"entries",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API - DELETE /api/entries/remove/1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = pm.response.json();\r",
+							"pm.test(\"Remove status code is 200\", () => {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validating response body\", () => {\r",
+							"  pm.expect(jsonData.message).to.be.eq(\"entry.removed\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{tokenAuthorization}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/api/entries/remove/{{entryDeleteId}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"entries",
+						"remove",
+						"{{entryDeleteId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API - POST /api/entries/search",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = pm.response.json();\r",
+							"pm.test(\"Signout status code is 200\", () => {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validating response body\", () => {\r",
+							"  //pm.expect(jsonData.message).to.be.eq(\"user.signed.out\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{tokenAuthorization}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"itemBusca\": \"Postma\",\r\n    \"searchOnlyCurrentMonth\": true\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/entries/search",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"entries",
+						"search"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API - GET /api/check/profile",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = pm.response.json();\r",
+							"pm.test(\"Check profile status code is 200\", () => {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validating response body\", () => {\r",
+							"  pm.expect(jsonData.id).to.be.not.null;\r",
+							"  pm.expect(jsonData.username).to.be.not.null;\r",
+							"  pm.expect(jsonData.email).to.be.not.null;\r",
+							"  pm.expect(jsonData.authorities.length).to.be.gte(1);\r",
+							"  pm.expect(jsonData.enabled).to.be.true;\r",
+							"  pm.expect(jsonData.accountNonLocked).to.be.true;\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{tokenAuthorization}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/api/check/profile",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"check",
+						"profile"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API - GET /api/footer/env",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = pm.response.text();\r",
+							"pm.test(\"Check footer/env status code is 200\", () => {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validating response body\", () => {\r",
+							"  pm.expect(jsonData).to.be.not.null;\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/footer/env",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"footer",
+						"env"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API - GET /api/footer/dbName",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = pm.response.text();\r",
+							"pm.test(\"Check footer/env status code is 200\", () => {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validating response body\", () => {\r",
+							"  pm.expect(jsonData).to.be.not.null;\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/api/footer/dbName",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"footer",
+						"dbName"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API - GET /api/dashboard/doughnutChart",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = pm.response.json();\r",
+							"pm.test(\"Check doughnutChart status code is 200\", () => {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validating response body\", () => {\r",
+							"  pm.expect(jsonData[0][\"income\"]).to.be.not.null;\r",
+							"  pm.expect(jsonData[0][\"transf\"]).to.be.not.null;\r",
+							"  pm.expect(jsonData[0][\"expense\"]).to.be.not.null;\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{tokenAuthorization}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/api/dashboard/doughnutChart?startDate=2024-01-01&endDate=2024-03-30",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"dashboard",
+						"doughnutChart"
+					],
+					"query": [
+						{
+							"key": "startDate",
+							"value": "2024-01-01"
+						},
+						{
+							"key": "endDate",
+							"value": "2024-03-30"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API - GET /api/dashboard/tableChart",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = pm.response.json();\r",
+							"pm.test(\"Check doughnutChart status code is 200\", () => {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validating response body\", () => {\r",
+							"  pm.expect(jsonData[0][\"income\"]).to.be.not.null;\r",
+							"  pm.expect(jsonData[0][\"transf\"]).to.be.not.null;\r",
+							"  pm.expect(jsonData[0][\"expense\"]).to.be.not.null;\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{tokenAuthorization}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/api/dashboard/tableChart?startDate=2024-01-01&endDate=2024-03-30",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"dashboard",
+						"tableChart"
+					],
+					"query": [
+						{
+							"key": "startDate",
+							"value": "2024-01-01"
+						},
+						{
+							"key": "endDate",
+							"value": "2024-03-30"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "{{host}}/api/check/profile",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{tokenAuthorization}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/api/check/profile",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"check",
+						"profile"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "API - POST /api/auth/signout",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let jsonData = pm.response.json();\r",
+							"pm.test(\"Signout status code is 200\", () => {\r",
+							"  pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Validating response body\", () => {\r",
+							"  pm.expect(jsonData.message).to.be.eq(\"user.signed.out\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/api/auth/signout",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"auth",
+						"signout"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "{{host}}/api/entryInfo/entryTypes",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{tokenAuthorization}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{host}}/api/entryInfo/entryTypes",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"api",
+						"entryInfo",
+						"entryTypes"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "host",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "user",
+			"value": "user",
+			"type": "string"
+		},
+		{
+			"key": "password",
+			"value": "a",
+			"type": "string"
+		},
+		{
+			"key": "tokenAuthorization",
+			"value": "Bearer {{token}}",
+			"type": "string"
+		}
+	]
+}
