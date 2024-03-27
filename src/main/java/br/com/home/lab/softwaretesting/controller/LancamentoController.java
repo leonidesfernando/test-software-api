@@ -48,8 +48,8 @@ public class LancamentoController {
         if(!violations.isEmpty()) {
             return ResponseEntity.badRequest().body(new MessageResponse(violations));
         }
-        lancamentoService.salvar(lancamento);
-        return ResponseEntity.ok().body(new MessageResponse("entry.added"));
+        lancamento = lancamentoService.salvar(lancamento);
+        return ResponseEntity.ok().body(new MessageResponse("entry.added", lancamento.getId()));
     }
 
     @GetMapping("/get/{id}")
