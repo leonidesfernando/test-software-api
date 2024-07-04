@@ -26,9 +26,9 @@ import static br.com.home.lab.softwaretesting.model.Lancamento.CURRENT_MONTH_CLA
 public class LancamentoService {
 
     static final String SQL_COUNT_BASE = "select count(*) from Lancamento l where  ";
-    static final String SQL_COUNT_WHERE = " (upper(l.descricao) like upper( :itemBusca)) " +
-            "  or (upper(l.tipoLancamento) like upper( :itemBusca)) " +
-            " or (upper(l.categoria) like upper( :itemBusca))";
+    static final String SQL_COUNT_WHERE = " (upper(l.descricao) like upper( :searchItem)) " +
+            "  or (upper(l.tipoLancamento) like upper( :searchItem)) " +
+            " or (upper(l.categoria) like upper( :searchItem))";
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -56,13 +56,13 @@ public class LancamentoService {
     public List<Lancamento> buscaTodosMesCorrente(int pagina, String itemBusca){
 
         return entityManager.createNamedQuery("lancamento.maisRecentesBySearching", Lancamento.class)
-                .setParameter("itemBusca", "%" + itemBusca + "%")
+                .setParameter("searchItem", "%" + itemBusca + "%")
                 .setFirstResult(calculaPrimeiroRegistroPorPagina(pagina))
                 .setMaxResults(MAXIMO_LANCAMENTOS).getResultList();
     }
     public List<Lancamento> buscaTodosBySearching(int pagina, String itemBusca){
         return entityManager.createNamedQuery("lancamento.BySearching", Lancamento.class)
-                .setParameter("itemBusca", "%" + itemBusca + "%")
+                .setParameter("searchItem", "%" + itemBusca + "%")
                 .setFirstResult(calculaPrimeiroRegistroPorPagina(pagina))
                 .setMaxResults(MAXIMO_LANCAMENTOS).getResultList();
     }
@@ -136,7 +136,7 @@ public class LancamentoService {
     static String getCountSql(String itemBusca){
         String sql = SQL_COUNT_BASE;
         if (StringUtils.hasText(itemBusca)) {
-            sql += SQL_COUNT_WHERE.replaceAll(":itemBusca", getSqlIlikeClause(itemBusca));
+            sql += SQL_COUNT_WHERE.replaceAll(":searchItem", getSqlIlikeClause(itemBusca));
         }else{
             sql += CURRENT_MONTH_CLAUSE;
         }
@@ -147,9 +147,9 @@ public class LancamentoService {
         return "'%"+item+"%'";
     }
 
-    public ResultadoRecord buscaAjax(BuscaForm buscaForm) {
-        final var itemBusca = buscaForm.itemBusca();
-        return getResultado(buscaForm.searchOnlyCurrentMonth()  ?
+    public ResultadoRecord buscaAjax(FormSearch formSearch) {
+        final var itemBusca = formSearch.searchItem();
+        return getResultado(formSearch.searchOnlyCurrentMonth()  ?
                         buscaTodosMesCorrente(1, itemBusca) :
                         buscaTodosBySearching(1, itemBusca),
                 conta(itemBusca), itemBusca);

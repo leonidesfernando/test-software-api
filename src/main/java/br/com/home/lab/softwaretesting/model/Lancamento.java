@@ -38,9 +38,9 @@ public class Lancamento {
     public static final String CURRENT_MONTH_CLAUSE = "year(l.dataLancamento) = year(current_date) and " +
             " month(l.dataLancamento) = month(current_date)";
 
-    public static final String SEARCH_BY_DESCRIPTION_OR_CATEGORY_ENTRY_TYPE  = "(upper(l.descricao) like upper( :itemBusca)) or " +
-            " (upper(l.tipoLancamento) like upper( :itemBusca)) or " +
-            " (upper(l.categoria) like upper( :itemBusca)) ";
+    public static final String SEARCH_BY_DESCRIPTION_OR_CATEGORY_ENTRY_TYPE  = "(upper(l.descricao) like upper( :searchItem)) or " +
+            " (upper(l.tipoLancamento) like upper( :searchItem)) or " +
+            " (upper(l.categoria) like upper( :searchItem)) ";
 
     @Id
     @GeneratedValue

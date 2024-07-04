@@ -1,6 +1,6 @@
 package br.com.home.lab.softwaretesting.controller;
 
-import br.com.home.lab.softwaretesting.controller.record.BuscaForm;
+import br.com.home.lab.softwaretesting.controller.record.FormSearch;
 import br.com.home.lab.softwaretesting.controller.record.LancamentoRecord;
 import br.com.home.lab.softwaretesting.controller.record.ResultadoRecord;
 import br.com.home.lab.softwaretesting.model.Categoria;
@@ -36,8 +36,8 @@ public class LancamentoController {
 
 
     @PostMapping("/search")
-    public ResponseEntity<ResultadoRecord> buscaAjax(@RequestBody BuscaForm buscaForm){
-        ResultadoRecord resultado = lancamentoService.buscaAjax(buscaForm);
+    public ResponseEntity<ResultadoRecord> buscaAjax(@RequestBody FormSearch formSearch){
+        ResultadoRecord resultado = lancamentoService.buscaAjax(formSearch);
         return ResponseEntity.ok(resultado);
     }
 
@@ -70,11 +70,15 @@ public class LancamentoController {
         //TODO: think about if will allow store a entry with a inexistent ID, today we accecpt, we ignore the ID and add a new one
         Lancamento lancamento = newEntry.build();
         String violations = validate(lancamento);
+        var existingLancamento = lancamentoService.buscaPorId(lancamento.getId());
+        if(existingLancamento.getId() != lancamento.getId()){
+            throw new IllegalStateException("There are no entry with this id: " + lancamento.getId());
+        }
         if(!violations.isEmpty()) {
             return ResponseEntity.badRequest().body(new MessageResponse(violations));
         }
         lancamentoService.salvar(lancamento);
-        return ResponseEntity.ok().body(new MessageResponse("entry.updated"));
+        return ResponseEntity.ok().body(new MessageResponse("entry.updated", lancamento.getId()));
     }
 
     private String validate(Lancamento lancamento){
@@ -88,7 +92,7 @@ public class LancamentoController {
     public ResponseEntity<MessageResponse> remove(@PathVariable("id") Long id){
 
         lancamentoService.remover(id);
-        return ResponseEntity.ok().body(new MessageResponse("entry.removed"));
+        return ResponseEntity.ok().body(new MessageResponse("entry.removed", id));
     }
 
     @DeleteMapping(value = "/removeAll")

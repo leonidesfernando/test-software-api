@@ -1,6 +1,6 @@
 package br.com.home.lab.softwaretesting.service;
 
-import br.com.home.lab.softwaretesting.controller.record.BuscaForm;
+import br.com.home.lab.softwaretesting.controller.record.FormSearch;
 import br.com.home.lab.softwaretesting.controller.record.ResultadoRecord;
 import br.com.home.lab.softwaretesting.controller.record.TotalLancamentoCategoriaRecord;
 import br.com.home.lab.softwaretesting.controller.record.TotalLancamentoRecord;
@@ -168,7 +168,7 @@ public class LancamentoServiceTest extends AbstractTransactionalTestNGSpringCont
 
     @Test
     public void contaCurrentMonthTest(){
-        String itemBusca = "itemBusca";
+        String itemBusca = "searchItem";
         long countValue = 10L;
         when(LancamentoService.getCountSql(itemBusca) + " and " + CURRENT_MONTH_CLAUSE).thenCallRealMethod();
         String sql = LancamentoService.getCountSql(itemBusca) + " and " + CURRENT_MONTH_CLAUSE;
@@ -192,7 +192,7 @@ public class LancamentoServiceTest extends AbstractTransactionalTestNGSpringCont
     @Test(dataProvider = "lancamentos")
     public void buscaTodosBySearchingTest(List<Lancamento> lancamentos){
         int pagina = 3;
-        String itemBusca = "itemBusca";
+        String itemBusca = "searchItem";
         mockQueryToBuscaTodosMeses(lancamentos, itemBusca, pagina);
         var result = lancamentoService.buscaTodosBySearching(pagina, itemBusca);
         assertThat(lancamentos).hasSameSizeAs(result);
@@ -211,7 +211,7 @@ public class LancamentoServiceTest extends AbstractTransactionalTestNGSpringCont
 
     @Test(dataProvider = "lancamentos")
     public void buscaTest(List<Lancamento> lancamentos){
-        String itemBusca = "itemBusca";
+        String itemBusca = "searchItem";
         mockQueryToBuscaTodosMesCorrente(lancamentos, itemBusca);
 
         when(lancamentoService.buscaTodosMesCorrente(1, itemBusca)).thenReturn(lancamentos);
@@ -237,7 +237,7 @@ public class LancamentoServiceTest extends AbstractTransactionalTestNGSpringCont
 
     private void mockQueryToBuscaTodosMesCorrente(List<Lancamento> lancamentos, String itemBusca){
         when(entityManager.createNamedQuery("lancamento.maisRecentesBySearching", Lancamento.class)).thenReturn(query);
-        when(query.setParameter("itemBusca", "%"+itemBusca+"%")).thenReturn(query);
+        when(query.setParameter("searchItem", "%"+itemBusca+"%")).thenReturn(query);
         when(query.setFirstResult(anyInt())).thenReturn(query);
         when(query.setMaxResults(MAXIMO_LANCAMENTOS)).thenReturn(query);
         when(query.getResultList()).thenReturn(lancamentos);
@@ -246,7 +246,7 @@ public class LancamentoServiceTest extends AbstractTransactionalTestNGSpringCont
 
     private void mockQueryToBuscaTodosMeses(List<Lancamento> lancamentos, String itemBusca, int pagina){
         when(entityManager.createNamedQuery("lancamento.BySearching", Lancamento.class)).thenReturn(query);
-        when(query.setParameter("itemBusca", "%" + itemBusca + "%")).thenReturn(query);
+        when(query.setParameter("searchItem", "%" + itemBusca + "%")).thenReturn(query);
         when(query.setFirstResult(lancamentoService.calculaPrimeiroRegistroPorPagina(pagina))).thenReturn(query);
         when(query.setMaxResults(MAXIMO_LANCAMENTOS).getResultList()).thenReturn(lancamentos);
     }
@@ -272,31 +272,31 @@ public class LancamentoServiceTest extends AbstractTransactionalTestNGSpringCont
 
     @Test(dataProvider = "lancamentos")
     public void buscaAjaxTestMesCorrente(List<Lancamento> lancamentos, final BigDecimal totalSaida, final BigDecimal totalEntrada){
-        BuscaForm buscaForm = new BuscaForm("itemBusca", true);
-        mockQueryToBuscaTodosMesCorrente(lancamentos, buscaForm.itemBusca());
-        buscaAjax(buscaForm, lancamentos, totalSaida, totalEntrada);
+        FormSearch formSearch = new FormSearch("searchItem", true);
+        mockQueryToBuscaTodosMesCorrente(lancamentos, formSearch.searchItem());
+        buscaAjax(formSearch, lancamentos, totalSaida, totalEntrada);
     }
 
     @Test(dataProvider = "lancamentos")
     public void buscaAjaxTestTodosMeses(List<Lancamento> lancamentos, final BigDecimal totalSaida, final BigDecimal totalEntrada){
-        BuscaForm buscaForm = new BuscaForm("itemBusca", false);
+        FormSearch formSearch = new FormSearch("searchItem", false);
         lancamentos.add(LancamentoGen.builder()
                 .comTipo(TipoLancamento.INCOME)
                 .comDescricao(DataGen.productName())
                 .comDataLancamento(DataGen.date())
                 .comValor(DataGen.moneyValue())
                 .build());
-        mockQueryToBuscaTodosMeses(lancamentos, buscaForm.itemBusca(), 1);
-        buscaAjax(buscaForm, lancamentos, totalSaida, totalEntrada);
+        mockQueryToBuscaTodosMeses(lancamentos, formSearch.searchItem(), 1);
+        buscaAjax(formSearch, lancamentos, totalSaida, totalEntrada);
     }
 
-    private void buscaAjax(BuscaForm buscaForm, List<Lancamento> lancamentos, final BigDecimal totalSaida, final BigDecimal totalEntrada){
-        String itemBusca = buscaForm.itemBusca();
+    private void buscaAjax(FormSearch formSearch, List<Lancamento> lancamentos, final BigDecimal totalSaida, final BigDecimal totalEntrada){
+        String itemBusca = formSearch.searchItem();
         long totalRegistros = 123L;
-        mockToCount(buscaForm.itemBusca(), totalRegistros);
+        mockToCount(formSearch.searchItem(), totalRegistros);
 
-        var resultBuscaTodos = buscaForm.searchOnlyCurrentMonth() ?
-                lancamentoService.buscaTodosMesCorrente(1, buscaForm.itemBusca())
+        var resultBuscaTodos = formSearch.searchOnlyCurrentMonth() ?
+                lancamentoService.buscaTodosMesCorrente(1, formSearch.searchItem())
                 : lancamentoService.buscaTodosBySearching(1, itemBusca);
 
         assertThat(resultBuscaTodos).hasSameSizeAs(lancamentos);
@@ -312,8 +312,8 @@ public class LancamentoServiceTest extends AbstractTransactionalTestNGSpringCont
         assertEquals(converter.convert(resultado.totalGeralEntrada()), totalGeralEntrada.setScale(2, RoundingMode.HALF_UP));
         assertThat(resultado.lancamentos()).hasSameSizeAs(lancamentos);
         assertThat(resultado.totalRegistros()).isEqualTo(totalRegistros);
-        when(lancamentoService.buscaAjax(buscaForm)).thenReturn(resultado);
-        lancamentoService.buscaAjax(buscaForm);
+        when(lancamentoService.buscaAjax(formSearch)).thenReturn(resultado);
+        lancamentoService.buscaAjax(formSearch);
     }
 
     @Test(dataProvider = "lancamentos")

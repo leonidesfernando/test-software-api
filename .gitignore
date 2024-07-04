@@ -23,7 +23,7 @@ target/
 
 ### HSQLDB ###
 *.lck
-db/
+db_ol/
 db/hsqldb/*.properties
 
 ### STS ###
