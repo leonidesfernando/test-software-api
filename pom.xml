@@ -411,11 +411,26 @@
 						</goals>
 						<configuration>
 							<rules>
-								<rule>
+								<!-- rule>
 									<element>PACKAGE</element>
 									<limits>
 										<limit>
 											<counter>LINE</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>${coverage_ratio_percentage}</minimum>
+										</limit>
+									</limits>
+								</rule -->
+								<rule>
+									<element>BUNDLE</element>
+									<limits>
+										<limit>
+											<counter>LINE</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>${coverage_ratio_percentage}</minimum>
+										</limit>
+										<limit>
+											<counter>BRANCH</counter>
 											<value>COVEREDRATIO</value>
 											<minimum>${coverage_ratio_percentage}</minimum>
 										</limit>
