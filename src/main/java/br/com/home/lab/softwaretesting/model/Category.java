@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @AllArgsConstructor
-public enum Categoria {
+public enum Category {
 
     @JsonProperty("food")
     FOOD("food"),

@@ -2,7 +2,7 @@ package br.com.home.lab.softwaretesting.controller;
 
 import br.com.home.lab.softwaretesting.controller.record.*;
 import br.com.home.lab.softwaretesting.model.TipoLancamento;
-import br.com.home.lab.softwaretesting.service.LancamentoService;
+import br.com.home.lab.softwaretesting.service.EntryService;
 import br.com.home.lab.softwaretesting.util.Constantes;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -31,11 +31,11 @@ import java.util.List;
 public class DashboardController {
 
     @NonNull
-    private LancamentoService lancamentoService;
+    private EntryService entryService;
 
 
     protected List<List<Object>> getTableData(Date dataInicial, Date dataFinal){
-        List<TotalLancamentoCategoriaRecord> totaisCategoria =  lancamentoService.getTotalPorPeriodoPorCategoria(dataInicial, dataFinal);
+        List<TotalLancamentoCategoriaRecord> totaisCategoria =  entryService.getTotalPorPeriodoPorCategoria(dataInicial, dataFinal);
 
         NumberFormat format = new DecimalFormat("'R$ ' #,###,##0.00");
         List<List<Object>> data = new ArrayList<>();
@@ -46,7 +46,7 @@ public class DashboardController {
             if(TipoLancamento.EXPENSE == t.tipo()){
                 valor = valor.negate();
             }
-            item.add(t.categoria().getNome());
+            item.add(t.category().getNome());
             KeyValueTableData keyValue = new KeyValueTableData(valor,format.format(valor));
             item.add(keyValue);
             data.add(item);
@@ -56,7 +56,7 @@ public class DashboardController {
 
     protected List<List<Object>> getChartDataDougnt(Date dataInicial, Date dataFinal){
 
-        List<TotalLancamentoRecord> totais =  lancamentoService.getTotalPorPeriodo(dataInicial, dataFinal);
+        List<TotalLancamentoRecord> totais =  entryService.getTotalPorPeriodo(dataInicial, dataFinal);
         List<List<Object>> data = new ArrayList<>();
         for(TotalLancamentoRecord t : totais) {
             List<Object> item = new ArrayList<>();

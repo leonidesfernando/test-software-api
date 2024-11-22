@@ -13,19 +13,28 @@ import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Date;
 
+@NamedNativeQueries( value = {
+    @NamedNativeQuery(name = "lancamento.maisRecentesBySearching", query = "SELECT * FROM Lancamento l WHERE EXTRACT(YEAR FROM l.data_Lancamento) = EXTRACT(YEAR FROM CURRENT_DATE) " +
+            "AND EXTRACT(MONTH FROM l.data_Lancamento) = EXTRACT(MONTH FROM CURRENT_DATE) " +
+            "AND (UPPER(l.descricao) LIKE UPPER(:searchItem) OR " +
+            "UPPER(l.tipo_Lancamento) LIKE UPPER(:searchItem) OR " +
+            "UPPER(l.category) LIKE UPPER(:searchItem)) " +
+            "ORDER BY l.data_Lancamento")
+})
+
 @NamedQueries(value = {
         @NamedQuery(name = "lancamento.maisRecentes", query = "select l from Lancamento l where " + Lancamento.CURRENT_MONTH_CLAUSE + " order by l.dataLancamento"),
         @NamedQuery(name = "lancamento.byDataLancamento", query = "select l from Lancamento l order by l.dataLancamento"),
 
-        @NamedQuery(name = "lancamento.maisRecentesBySearching", query = "select l from Lancamento l where " + Lancamento.CURRENT_MONTH_CLAUSE + " and " + Lancamento.SEARCH_BY_DESCRIPTION_OR_CATEGORY_ENTRY_TYPE + " order by l.dataLancamento"),
+
         @NamedQuery(name = "lancamento.BySearching", query = "select l from Lancamento l where " + Lancamento.SEARCH_BY_DESCRIPTION_OR_CATEGORY_ENTRY_TYPE + " order by l.dataLancamento"),
 
         @NamedQuery(name = "lancamento.totalLancamentosPorPeriodo",
                 query = "select new br.com.home.lab.softwaretesting.controller.record.TotalLancamentoRecord(sum(l.valor), l.tipoLancamento) " +
                         " from Lancamento l where l.dataLancamento between :dataInicial and :dataFinal group by l.tipoLancamento"),
         @NamedQuery(name = "lancamento.totalLancamentosPorPeriodoPorCategoria",
-                query = "select new br.com.home.lab.softwaretesting.controller.record.TotalLancamentoCategoriaRecord(sum(l.valor), l.tipoLancamento, l.categoria) " +
-                        " from Lancamento l where l.dataLancamento between :dataInicial and :dataFinal group by l.tipoLancamento, l.categoria order by l.tipoLancamento"),
+                query = "select new br.com.home.lab.softwaretesting.controller.record.TotalLancamentoCategoriaRecord(sum(l.valor), l.tipoLancamento, l.category) " +
+                        " from Lancamento l where l.dataLancamento between :dataInicial and :dataFinal group by l.tipoLancamento, l.category order by l.tipoLancamento"),
         @NamedQuery(name = "lancamento.soma.por.tipolancamento", query = "select sum(l.valor) from Lancamento l where l.tipoLancamento = :tipoLancamento")
 })
 
@@ -40,7 +49,7 @@ public class Lancamento {
 
     public static final String SEARCH_BY_DESCRIPTION_OR_CATEGORY_ENTRY_TYPE  = "(upper(l.descricao) like upper( :searchItem)) or " +
             " (upper(l.tipoLancamento) like upper( :searchItem)) or " +
-            " (upper(l.categoria) like upper( :searchItem)) ";
+            " (upper(l.category) like upper( :searchItem)) ";
 
     @Id
     @GeneratedValue
@@ -75,5 +84,5 @@ public class Lancamento {
     @Getter
     @Setter
     @Enumerated(EnumType.STRING)
-    private Categoria categoria;
+    private Category category;
 }

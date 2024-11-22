@@ -23,12 +23,12 @@ import static br.com.home.lab.softwaretesting.model.Lancamento.CURRENT_MONTH_CLA
 
 @Service
 @AllArgsConstructor
-public class LancamentoService {
+public class EntryService {
 
     static final String SQL_COUNT_BASE = "select count(*) from Lancamento l where  ";
     static final String SQL_COUNT_WHERE = " (upper(l.descricao) like upper( :searchItem)) " +
             "  or (upper(l.tipoLancamento) like upper( :searchItem)) " +
-            " or (upper(l.categoria) like upper( :searchItem))";
+            " or (upper(l.category) like upper( :searchItem))";
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -37,7 +37,7 @@ public class LancamentoService {
 
 
     @Transactional
-    public Lancamento salvar(Lancamento lancamento) {
+    public Lancamento save(Lancamento lancamento) {
         return lancamentoRepository.save(lancamento);
     }
 
@@ -55,14 +55,22 @@ public class LancamentoService {
 
     public List<Lancamento> buscaTodosMesCorrente(int pagina, String itemBusca){
 
-        return entityManager.createNamedQuery("lancamento.maisRecentesBySearching", Lancamento.class)
-                .setParameter("searchItem", "%" + itemBusca + "%")
+        String sql = "SELECT * FROM Lancamento l WHERE EXTRACT(YEAR FROM l.data_Lancamento) = EXTRACT(YEAR FROM CURRENT_DATE) " +
+                "AND EXTRACT(MONTH FROM l.data_Lancamento) = EXTRACT(MONTH FROM CURRENT_DATE) " +
+                "AND (UPPER(l.descricao) LIKE UPPER(:searchItem) OR " +
+                "UPPER(l.tipo_Lancamento) LIKE UPPER(:searchItem) OR " +
+                "UPPER(l.category) LIKE UPPER(:searchItem)) " +
+                "ORDER BY l.data_Lancamento";
+        //"'%"+item+"%'"
+        return entityManager.createNativeQuery(sql, Lancamento.class)
+                .setParameter("searchItem", "%"+itemBusca+"%")
                 .setFirstResult(calculaPrimeiroRegistroPorPagina(pagina))
                 .setMaxResults(MAXIMO_LANCAMENTOS).getResultList();
     }
+
     public List<Lancamento> buscaTodosBySearching(int pagina, String itemBusca){
         return entityManager.createNamedQuery("lancamento.BySearching", Lancamento.class)
-                .setParameter("searchItem", "%" + itemBusca + "%")
+                .setParameter("searchItem", "'%"+itemBusca+"%'")
                 .setFirstResult(calculaPrimeiroRegistroPorPagina(pagina))
                 .setMaxResults(MAXIMO_LANCAMENTOS).getResultList();
     }
@@ -147,25 +155,26 @@ public class LancamentoService {
         return "'%"+item+"%'";
     }
 
-    public ResultadoRecord buscaAjax(FormSearch formSearch) {
+    public ResultRecord ajaxSearch(FormSearch formSearch) {
         final var itemBusca = formSearch.searchItem();
-        return getResultado(formSearch.searchOnlyCurrentMonth()  ?
-                        buscaTodosMesCorrente(1, itemBusca) :
-                        buscaTodosBySearching(1, itemBusca),
-                conta(itemBusca), itemBusca);
+        final var page = formSearch.page() > 0 ? formSearch.page() : 1;
+        if(formSearch.searchOnlyCurrentMonth()){
+            return getResultado(buscaTodosMesCorrente(page, itemBusca), contaCurrentMonth(itemBusca), itemBusca, page);
+        }
+        return getResultado(buscaTodosBySearching(page, itemBusca), conta(itemBusca), itemBusca, page);
     }
 
-    ResultadoRecord getResultado(final List<Lancamento> resultado, long totalRegistros, String itemBusca) {
-        final List<LancamentoRecord> lancamentos = new ArrayList<>(resultado.size());
+    ResultRecord getResultado(final List<Lancamento> resultado, long totalRegistros, String itemSearch, int page) {
+        final List<EntryRecord> entries = new ArrayList<>(resultado.size());
         MoneyToStringConverter converter = new MoneyToStringConverter();
         DateFormat dateFormat = new SimpleDateFormat(Constantes.dd_MM_yyyy_SLASH);
         resultado.forEach(r -> {
                     String categoria = "";
-                    if (Objects.nonNull(r.getCategoria())) {
-                        categoria = r.getCategoria().getNome();
+                    if (Objects.nonNull(r.getCategory())) {
+                        categoria = r.getCategory().getNome();
                     }
-                    lancamentos.add(
-                            new LancamentoRecord(r.getId(),
+                    entries.add(
+                            new EntryRecord(r.getId(),
                                     r.getDescricao(),
                                     converter.convert(r.getValor()),
                                     dateFormat.format(r.getDataLancamento()),
@@ -176,19 +185,20 @@ public class LancamentoService {
                 }
         );
         //TODO: Check if these converters will be necessary in the future
-        return new ResultadoRecord(converter.convert(getTotalDespesa(resultado)),
+        return new ResultRecord(converter.convert(getTotalDespesa(resultado)),
                 converter.convert(getTotalRenda(resultado)),
                 converter.convert(calculaTotalGeralDespesa()),
                 converter.convert(calculaTotalGeralRenda()),
-                lancamentos,
-                1,
+                entries,
+                page,
                 resultado.size(),
                 totalRegistros,
-                itemBusca
+                getPaginas(Math.toIntExact(totalRegistros)),
+                itemSearch
                 );
     }
 
-    public Lancamento buscaPorId(Long id) {
+    public Lancamento searchById(Long id) {
         Optional<Lancamento> opt = lancamentoRepository.findById(id);
         return opt.orElseThrow(() -> new IllegalStateException("Deveria ter o Lancamento pelo id: " + id));
     }
