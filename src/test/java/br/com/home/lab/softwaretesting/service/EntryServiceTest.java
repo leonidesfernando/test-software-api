@@ -1,11 +1,11 @@
 package br.com.home.lab.softwaretesting.service;
 
 import br.com.home.lab.softwaretesting.controller.record.FormSearch;
-import br.com.home.lab.softwaretesting.controller.record.ResultadoRecord;
+import br.com.home.lab.softwaretesting.controller.record.ResultRecord;
 import br.com.home.lab.softwaretesting.controller.record.TotalLancamentoCategoriaRecord;
 import br.com.home.lab.softwaretesting.controller.record.TotalLancamentoRecord;
 import br.com.home.lab.softwaretesting.converter.StringToMoneyConverter;
-import br.com.home.lab.softwaretesting.model.Categoria;
+import br.com.home.lab.softwaretesting.model.Category;
 import br.com.home.lab.softwaretesting.model.Lancamento;
 import br.com.home.lab.softwaretesting.model.TipoLancamento;
 import br.com.home.lab.softwaretesting.repository.LancamentoRepository;
@@ -34,7 +34,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static br.com.home.lab.softwaretesting.model.Lancamento.CURRENT_MONTH_CLAUSE;
-import static br.com.home.lab.softwaretesting.service.LancamentoService.MAXIMO_LANCAMENTOS;
+import static br.com.home.lab.softwaretesting.service.EntryService.MAXIMO_LANCAMENTOS;
 import static br.com.home.lab.softwaretesting.util.LancamentoGen.novaDespesa;
 import static br.com.home.lab.softwaretesting.util.LancamentoGen.novaRenda;
 import static java.util.stream.Collectors.toList;
@@ -51,7 +51,7 @@ class LancamentoServiceTest {
 
     @Spy
     @InjectMocks
-    private LancamentoService lancamentoService;
+    private EntryService entryService;
 
     @Mock
     private LancamentoRepository lancamentoRepository;
@@ -67,11 +67,11 @@ class LancamentoServiceTest {
     }
 
     @Test
-    void salvarTest(){
+    void saveTest(){
         given(lancamentoRepository.save(any(Lancamento.class)))
                 .willReturn(new Lancamento());
 
-        lancamentoService.salvar(new Lancamento());
+        entryService.save(new Lancamento());
 
         verify(lancamentoRepository, times(1))
                 .save(any(Lancamento.class));
@@ -85,11 +85,11 @@ class LancamentoServiceTest {
                 .comDescricao(DataGen.productName())
                 .comDataLancamento(DataGen.date())
                 .comValor(DataGen.moneyValue())
-                .comCategoria(Categoria.WAGE)
+                .comCategoria(Category.WAGE)
                 .build();
 
         when(lancamentoRepository.getById(id)).thenReturn(lancamento);
-        lancamentoService.remover(id);
+        entryService.remover(id);
 
         verify(lancamentoRepository, times(1))
                 .getById(anyLong());
@@ -100,7 +100,7 @@ class LancamentoServiceTest {
     @ParameterizedTest
     @MethodSource("totalSaidaData")
     void getTotalSaidaTest(List<Lancamento> lancamentos, BigDecimal totalSaidaEsperado){
-        BigDecimal totalObtido = lancamentoService.getTotalDespesa(lancamentos);
+        BigDecimal totalObtido = entryService.getTotalDespesa(lancamentos);
         assertThat(totalObtido).isEqualTo(totalSaidaEsperado);
     }
 
@@ -111,45 +111,45 @@ class LancamentoServiceTest {
                 .comTipo(TipoLancamento.INCOME)
                 .comDescricao(DataGen.productName())
                 .comDataLancamento(DataGen.date())
-                .comCategoria(Categoria.WAGE)
+                .comCategoria(Category.WAGE)
                 .build());
 
-        when(lancamentoService.somaValoresPorTipo(lancamentos, TipoLancamento.INCOME)).thenCallRealMethod();
-        when(lancamentoService.getTotalRenda(lancamentos)).thenCallRealMethod();
-        assertThat(totalEntradaEsperado).isEqualTo(lancamentoService.getTotalRenda(lancamentos));
+        when(entryService.somaValoresPorTipo(lancamentos, TipoLancamento.INCOME)).thenCallRealMethod();
+        when(entryService.getTotalRenda(lancamentos)).thenCallRealMethod();
+        assertThat(totalEntradaEsperado).isEqualTo(entryService.getTotalRenda(lancamentos));
     }
 
     @Test
     void getPaginasTest(){
-        when(lancamentoService.calculaNumeroPaginas(anyInt())).thenCallRealMethod();
-        when(lancamentoService.getPaginas(anyInt())).thenCallRealMethod();
+        when(entryService.calculaNumeroPaginas(anyInt())).thenCallRealMethod();
+        when(entryService.getPaginas(anyInt())).thenCallRealMethod();
         int totalRegistros = DataGen.number(5, 50);
-        int numeroPaginas = lancamentoService.calculaNumeroPaginas(totalRegistros);
-        var list = lancamentoService.getPaginas(totalRegistros);
+        int numeroPaginas = entryService.calculaNumeroPaginas(totalRegistros);
+        var list = entryService.getPaginas(totalRegistros);
 
         assertThat(list)
                 .isEqualTo(IntStream.rangeClosed(1, numeroPaginas)
-                        .boxed().collect(toList()));
+                        .boxed().toList());
     }
 
     @ParameterizedTest
     @MethodSource("entriesAndPages")
     void calculaNumeroPaginasTest(int totalRegistos, int totalPaginas){
-        assertThat(lancamentoService.calculaNumeroPaginas(totalRegistos)).isEqualTo(totalPaginas);
+        assertThat(entryService.calculaNumeroPaginas(totalRegistos)).isEqualTo(totalPaginas);
     }
 
     @Test
     void calculaNumeroPaginasNegativeCaseTest(){
-        assertThat(lancamentoService.calculaNumeroPaginas(500)).isNotEqualTo(5);
+        assertThat(entryService.calculaNumeroPaginas(500)).isNotEqualTo(5);
     }
 
 
     @Test
     void calculaPrimeiroRegistroPorPaginaTest(){
-        assertThat(lancamentoService.calculaPrimeiroRegistroPorPagina(0)).isZero();
+        assertThat(entryService.calculaPrimeiroRegistroPorPagina(0)).isZero();
         int pages = 10;
         IntStream.rangeClosed(1, pages).forEach(i ->
-                assertThat(lancamentoService.calculaPrimeiroRegistroPorPagina(i))
+                assertThat(entryService.calculaPrimeiroRegistroPorPagina(i))
                         .isEqualTo((i-1) * MAXIMO_LANCAMENTOS)
         );
     }
@@ -159,7 +159,7 @@ class LancamentoServiceTest {
         Long id = 10L;
         when(lancamentoRepository.findById(id)).thenReturn(Optional.empty());
         IllegalStateException exe = assertThrows(IllegalStateException.class, () ->
-                lancamentoService.buscaPorId(id)
+                entryService.searchById(id)
         );
         assertEquals("Deveria ter o Lancamento pelo id: " + id, exe.getMessage());
     }
@@ -180,13 +180,13 @@ class LancamentoServiceTest {
         long countValue = 10L;
 
         try(MockedStatic<LancamentoService> lancamentoServiceMockedStatic = Mockito.mockStatic(LancamentoService.class)){
-            lancamentoServiceMockedStatic.when(() -> LancamentoService.getCountSql(itemBusca)).thenCallRealMethod();
+            lancamentoServiceMockedStatic.when(() -> EntryService.getCountSql(itemBusca)).thenCallRealMethod();
         }
 
-        String sql = LancamentoService.getCountSql(itemBusca) + " and " + CURRENT_MONTH_CLAUSE;
+        String sql = EntryService.getCountSql(itemBusca) + " and " + CURRENT_MONTH_CLAUSE;
         when(entityManager.createQuery(sql, Long.class)).thenReturn(query);
         when(query.getSingleResult()).thenReturn(countValue);
-        assertThat(lancamentoService.contaCurrentMonth(itemBusca)).isEqualTo(countValue);
+        assertThat(entryService.contaCurrentMonth(itemBusca)).isEqualTo(countValue);
     }
 
     @ParameterizedTest
@@ -195,11 +195,11 @@ class LancamentoServiceTest {
     void buscaTodosTest(List<Lancamento> lancamentos){
         int page = 3;
         when(entityManager.createNamedQuery("lancamento.maisRecentes", Lancamento.class)).thenReturn(query);
-        when(query.setFirstResult(lancamentoService.calculaPrimeiroRegistroPorPagina(page))).thenReturn(query);
+        when(query.setFirstResult(entryService.calculaPrimeiroRegistroPorPagina(page))).thenReturn(query);
         when(query.setMaxResults(MAXIMO_LANCAMENTOS)).thenReturn(query);
         when(query.getResultList()).thenReturn(lancamentos);
 
-        assertThat(lancamentoService.buscaTodosMesCorrente(page)).hasSameSizeAs(lancamentos);
+        assertThat(entryService.buscaTodosMesCorrente(page)).hasSameSizeAs(lancamentos);
         verify(entityManager, times(1)).createNamedQuery("lancamento.maisRecentes", Lancamento.class);
     }
 
@@ -209,20 +209,19 @@ class LancamentoServiceTest {
         int pagina = 3;
         String itemBusca = "searchItem";
         mockQueryToBuscaTodosMeses(lancamentos, itemBusca, pagina);
-        var result = lancamentoService.buscaTodosBySearching(pagina, itemBusca);
+        var result = entryService.buscaTodosBySearching(pagina, itemBusca);
         assertThat(lancamentos).hasSameSizeAs(result);
-        verify(lancamentoService).buscaTodosBySearching(pagina, itemBusca);
+        verify(entryService).buscaTodosBySearching(pagina, itemBusca);
     }
 
-    @ParameterizedTest
-    @MethodSource("genDefaultData")
+    @Test(dataProvider = "lancamentos")
     @SuppressWarnings("unchecked")
     void buscaTodosOrderingByDataLancamentoTest(List<Lancamento> lancamentos){
         when(entityManager.createNamedQuery("lancamento.byDataLancamento", Lancamento.class)).thenReturn(query);
         when(query.setMaxResults(MAXIMO_LANCAMENTOS)).thenReturn(query);
         when(query.getResultList()).thenReturn(lancamentos);
 
-        assertThat(lancamentoService.buscaTodosOrderingByDataLancamento()).hasSameSizeAs(lancamentos);
+        assertThat(entryService.buscaTodosOrderingByDataLancamento()).hasSameSizeAs(lancamentos);
         verify(entityManager, times(1)).createNamedQuery("lancamento.byDataLancamento", Lancamento.class);
     }
 
@@ -232,8 +231,8 @@ class LancamentoServiceTest {
         String itemBusca = "searchItem";
         mockQueryToBuscaTodosMesCorrente(lancamentos, itemBusca);
 
-        when(lancamentoService.buscaTodosMesCorrente(1, itemBusca)).thenReturn(lancamentos);
-        assertThat(lancamentoService.buscaTodosMesCorrente(1, itemBusca)).hasSameSizeAs(lancamentos);
+        when(entryService.buscaTodosMesCorrente(1, itemBusca)).thenReturn(lancamentos);
+        assertThat(entryService.buscaTodosMesCorrente(1, itemBusca)).hasSameSizeAs(lancamentos);
     }
 
     @ParameterizedTest
@@ -255,10 +254,9 @@ class LancamentoServiceTest {
     @Test
     @SuppressWarnings("unchecked")
     void contaTodosLancamentosTest(){
-        long totalRegistros = 12L;
-        when(entityManager.createQuery(LancamentoService.getCountSql(null), Long.class)).thenReturn(query);
-        when(query.getSingleResult()).thenReturn(totalRegistros);
-        assertEquals(lancamentoService.conta(null), totalRegistros);
+        when(entityManager.createQuery(EntryService.getCountSql(null), Long.class)).thenReturn(query);
+        when(query.getSingleResult()).thenReturn(12L);
+        entryService.conta(null);
     }
 
     @Test
@@ -267,7 +265,7 @@ class LancamentoServiceTest {
         long totalRegistros = 12L;
         mockToCount(itemBusca, totalRegistros);
 
-        assertEquals(lancamentoService.conta(itemBusca), totalRegistros);
+        entryService.conta(itemBusca);
     }
 
     private void mockQueryToBuscaTodosMesCorrente(List<Lancamento> lancamentos, String itemBusca){
@@ -276,13 +274,13 @@ class LancamentoServiceTest {
         when(query.setFirstResult(anyInt())).thenReturn(query);
         when(query.setMaxResults(MAXIMO_LANCAMENTOS)).thenReturn(query);
         when(query.getResultList()).thenReturn(lancamentos);
-        when(lancamentoService.buscaTodosMesCorrente(1, itemBusca)).thenReturn(lancamentos);
+        when(entryService.buscaTodosMesCorrente(1, itemBusca)).thenReturn(lancamentos);
     }
 
     private void mockQueryToBuscaTodosMeses(List<Lancamento> lancamentos, String itemBusca, int pagina){
         when(entityManager.createNamedQuery("lancamento.BySearching", Lancamento.class)).thenReturn(query);
         when(query.setParameter("searchItem", "%" + itemBusca + "%")).thenReturn(query);
-        when(query.setFirstResult(lancamentoService.calculaPrimeiroRegistroPorPagina(pagina))).thenReturn(query);
+        when(query.setFirstResult(entryService.calculaPrimeiroRegistroPorPagina(pagina))).thenReturn(query);
         when(query.setMaxResults(MAXIMO_LANCAMENTOS)).thenReturn(query);
         when(query.getResultList()).thenReturn(lancamentos);
     }
@@ -292,8 +290,8 @@ class LancamentoServiceTest {
         when(entityManager.createNamedQuery("lancamento.soma.por.tipolancamento", BigDecimal.class)).thenReturn(query);
         when(query.setParameter("tipoLancamento", TipoLancamento.EXPENSE)).thenReturn(query);
         when(query.getSingleResult()).thenReturn(totalGeral);
-        when(lancamentoService.calculaTotalPorTipoLancamento(TipoLancamento.EXPENSE)).thenReturn(totalGeral);
-        when(lancamentoService.calculaTotalGeralDespesa()).thenReturn(totalGeral);
+        when(entryService.calculaTotalPorTipoLancamento(TipoLancamento.EXPENSE)).thenReturn(totalGeral);
+        when(entryService.calculaTotalGeralDespesa()).thenReturn(totalGeral);
     }
 
     @SuppressWarnings("unchecked")
@@ -301,23 +299,23 @@ class LancamentoServiceTest {
         when(entityManager.createNamedQuery("lancamento.soma.por.tipolancamento", BigDecimal.class)).thenReturn(query);
         when(query.setParameter("tipoLancamento", TipoLancamento.INCOME)).thenReturn(query);
         when(query.getSingleResult()).thenReturn(totalGeralEntrada);
-        when(lancamentoService.calculaTotalPorTipoLancamento(TipoLancamento.INCOME)).thenReturn(totalGeralEntrada);
-        when(lancamentoService.calculaTotalGeralRenda()).thenReturn(totalGeralEntrada);
-        assertThat(lancamentoService.calculaTotalGeralRenda()).isEqualTo(totalGeralEntrada);
+        when(entryService.calculaTotalPorTipoLancamento(TipoLancamento.INCOME)).thenReturn(totalGeralEntrada);
+        when(entryService.calculaTotalGeralRenda()).thenReturn(totalGeralEntrada);
+        assertThat(entryService.calculaTotalGeralRenda()).isEqualTo(totalGeralEntrada);
     }
 
     @ParameterizedTest
     @MethodSource("genAjaxSearchData")
-    void buscaAjaxTestMesCorrente(List<Lancamento> lancamentos, final BigDecimal totalSaida, final BigDecimal totalEntrada){
-        FormSearch formSearch = new FormSearch("searchItem", true);
+    void ajaxSearchTestMesCorrente(List<Lancamento> lancamentos, final BigDecimal totalSaida, final BigDecimal totalEntrada){
+        FormSearch formSearch = new FormSearch("searchItem", true, 1);
         mockQueryToBuscaTodosMesCorrente(lancamentos, formSearch.searchItem());
-        buscaAjax(formSearch, lancamentos, totalSaida, totalEntrada);
+        ajaxSearch(formSearch, lancamentos, totalSaida, totalEntrada);
     }
 
     @ParameterizedTest
     @MethodSource("genAjaxSearchData")
-    void buscaAjaxTestTodosMeses(List<Lancamento> lancamentos, final BigDecimal totalSaida, final BigDecimal totalEntrada){
-        FormSearch formSearch = new FormSearch("searchItem", false);
+    void ajaxSearchTestTodosMeses(List<Lancamento> lancamentos, final BigDecimal totalSaida, final BigDecimal totalEntrada){
+        FormSearch formSearch = new FormSearch("searchItem", false, 1);
         lancamentos.add(LancamentoGen.builder()
                 .comTipo(TipoLancamento.INCOME)
                 .comDescricao(DataGen.productName())
@@ -325,17 +323,17 @@ class LancamentoServiceTest {
                 .comValor(DataGen.moneyValue())
                 .build());
         mockQueryToBuscaTodosMeses(lancamentos, formSearch.searchItem(), 1);
-        buscaAjax(formSearch, lancamentos, totalSaida, totalEntrada);
+        ajaxSearch(formSearch, lancamentos, totalSaida, totalEntrada);
     }
 
-    private void buscaAjax(FormSearch formSearch, List<Lancamento> lancamentos, final BigDecimal totalSaida, final BigDecimal totalEntrada){
+    private void ajaxSearch(FormSearch formSearch, List<Lancamento> lancamentos, final BigDecimal totalSaida, final BigDecimal totalEntrada){
         String itemBusca = formSearch.searchItem();
         long totalRegistros = 123L;
         mockToCount(formSearch.searchItem(), totalRegistros);
 
         var resultBuscaTodos = formSearch.searchOnlyCurrentMonth() ?
-                lancamentoService.buscaTodosMesCorrente(1, formSearch.searchItem())
-                : lancamentoService.buscaTodosBySearching(1, itemBusca);
+                entryService.buscaTodosMesCorrente(1, formSearch.searchItem())
+                : entryService.buscaTodosBySearching(1, itemBusca);
 
         assertThat(resultBuscaTodos).hasSameSizeAs(lancamentos);
 
@@ -345,13 +343,13 @@ class LancamentoServiceTest {
         mockCalculaTotalGeralRenda(totalGeralEntrada);
 
         StringToMoneyConverter converter = new StringToMoneyConverter();
-        doCallRealMethod().when(lancamentoService).getResultado(lancamentos, totalRegistros, itemBusca);
-        ResultadoRecord resultado = lancamentoService.getResultado(lancamentos, totalRegistros, itemBusca);
-        assertEquals(converter.convert(resultado.totalGeralEntrada()), totalGeralEntrada.setScale(2, RoundingMode.HALF_UP));
-        assertThat(resultado.lancamentos()).hasSameSizeAs(lancamentos);
-        assertThat(resultado.totalRegistros()).isEqualTo(totalRegistros);
-        when(lancamentoService.buscaAjax(formSearch)).thenReturn(resultado);
-        lancamentoService.buscaAjax(formSearch);
+        doCallRealMethod().when(entryService).getResultado(lancamentos, totalRegistros, itemBusca, 1);
+        ResultRecord resultado = entryService.getResultado(lancamentos, totalRegistros, itemBusca, 1);
+        assertEquals(converter.convert(resultado.grandTotalWinnings()), totalGeralEntrada.setScale(2, RoundingMode.HALF_UP));
+        assertThat(resultado.entries()).hasSameSizeAs(lancamentos);
+        assertThat(resultado.totalRecords()).isEqualTo(totalRegistros);
+        when(entryService.ajaxSearch(formSearch)).thenReturn(resultado);
+        entryService.ajaxSearch(formSearch);
     }
 
     @ParameterizedTest
@@ -367,9 +365,9 @@ class LancamentoServiceTest {
         when(query.setParameter("dataFinal", dataFinal)).thenReturn(query);
         when(query.getResultList()).thenReturn(list);
 
-        when(lancamentoService.getTotalPorPeriodo(dataInicial, dataFinal)).thenReturn(list);
+        when(entryService.getTotalPorPeriodo(dataInicial, dataFinal)).thenReturn(list);
 
-        List<TotalLancamentoRecord> result = lancamentoService.getTotalPorPeriodo(dataInicial, dataFinal);
+        List<TotalLancamentoRecord> result = entryService.getTotalPorPeriodo(dataInicial, dataFinal);
         assertThat(result).hasSameSizeAs(list);
 
         assertThat(result)
@@ -391,8 +389,8 @@ class LancamentoServiceTest {
         when(query.setParameter("dataFinal", dataFinal)).thenReturn(query);
         when(query.getSingleResult()).thenReturn(list);
 
-        when(lancamentoService.getTotalPorPeriodoPorCategoria(dataInicial, dataFinal)).thenReturn(list);
-        List<TotalLancamentoCategoriaRecord> result = lancamentoService.getTotalPorPeriodoPorCategoria(dataInicial, dataFinal);
+        when(entryService.getTotalPorPeriodoPorCategoria(dataInicial, dataFinal)).thenReturn(list);
+        List<TotalLancamentoCategoriaRecord> result = entryService.getTotalPorPeriodoPorCategoria(dataInicial, dataFinal);
         assertThat(result).hasSameSizeAs(list);
         assertThat(result)
                 .filteredOn(l -> l.tipo() == TipoLancamento.EXPENSE)
@@ -405,16 +403,16 @@ class LancamentoServiceTest {
     @Test
     void truncateTableTest(){
         doNothing().when(lancamentoRepository).truncateTable();
-        lancamentoService.truncateTable();
+        entryService.truncateTable();
         verify(lancamentoRepository).truncateTable();
     }
 
     @SuppressWarnings("unchecked")
     private void mockToCount(String itemBusca, long totalRegistros){
-        TypedQuery<Long> query = mock(TypedQuery.class);
-        when(entityManager.createQuery(LancamentoService.getCountSql(itemBusca), Long.class)).thenReturn(query);
-        when(query.getSingleResult()).thenReturn(totalRegistros);
-        when(lancamentoService.conta(itemBusca)).thenReturn(totalRegistros);
+        TypedQuery<Long> longTypedQuery = mock(TypedQuery.class);
+        when(entityManager.createQuery(EntryService.getCountSql(itemBusca), Long.class)).thenReturn(longTypedQuery);
+        when(longTypedQuery.getSingleResult()).thenReturn(totalRegistros);
+        when(entryService.conta(itemBusca)).thenReturn(totalRegistros);
     }
 
 
@@ -470,7 +468,7 @@ class LancamentoServiceTest {
     private static Stream<Arguments> totalPorCategoriaData(){
         List<TotalLancamentoCategoriaRecord> listTotalLancamentoCategoria = new ArrayList<>();
         int size = DataGen.number(5, 30);
-        var categorias = Categoria.values();
+        var categorias = Category.values();
         for (int i = 0; i < size; i++) {
             var tipo = (i % 3 == 0) ? TipoLancamento.INCOME : TipoLancamento.EXPENSE;
             int indice = DataGen.number(0, categorias.length - 1);

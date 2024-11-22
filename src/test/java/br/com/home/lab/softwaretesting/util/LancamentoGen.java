@@ -1,6 +1,6 @@
 package br.com.home.lab.softwaretesting.util;
 
-import br.com.home.lab.softwaretesting.model.Categoria;
+import br.com.home.lab.softwaretesting.model.Category;
 import br.com.home.lab.softwaretesting.model.Lancamento;
 import br.com.home.lab.softwaretesting.model.TipoLancamento;
 
@@ -18,14 +18,14 @@ public class LancamentoGen {
     }
 
     protected static Lancamento novoLancamento(TipoLancamento tipoLancamento){
-        Categoria[] categorias = Categoria.values();
-        int indice = DataGen.number(0, categorias.length-1);
+        Category[] categories = Category.values();
+        int indice = DataGen.number(0, categories.length-1);
         return new LancamentoBuilder()
                 .comValor(DataGen.moneyValue())
                 .comTipo(tipoLancamento)
                 .comDescricao(DataGen.productName())
                 .comDataLancamento(DataGen.date())
-                .comCategoria(categorias[indice])
+                .comCategoria(categories[indice])
                 .build();
     }
 
@@ -62,8 +62,8 @@ public class LancamentoGen {
             return lancamento;
         }
 
-        public LancamentoBuilder comCategoria(Categoria categoria) {
-            lancamento.setCategoria(categoria);
+        public LancamentoBuilder comCategoria(Category category) {
+            lancamento.setCategory(category);
             return this;
         }
     }

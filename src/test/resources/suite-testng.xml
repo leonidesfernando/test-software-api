@@ -8,7 +8,7 @@
     
     <test name="Testing Services - disable due a issue wiht JDK 17 and mockito" enabled="false">
         <classes>
-            <class name="br.com.home.lab.softwaretesting.service.LancamentoServiceTest"></class>
+            <class name="br.com.home.lab.softwaretesting.service.EntryServiceTest"></class>
         </classes>
     </test>
     <test name="Testin Models">
