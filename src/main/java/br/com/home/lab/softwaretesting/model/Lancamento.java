@@ -14,12 +14,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 @NamedNativeQueries( value = {
-    @NamedNativeQuery(name = "lancamento.maisRecentesBySearching", query = "SELECT * FROM Lancamento l WHERE EXTRACT(YEAR FROM l.data_Lancamento) = EXTRACT(YEAR FROM CURRENT_DATE) " +
-            "AND EXTRACT(MONTH FROM l.data_Lancamento) = EXTRACT(MONTH FROM CURRENT_DATE) " +
-            "AND (UPPER(l.descricao) LIKE UPPER(:searchItem) OR " +
-            "UPPER(l.tipo_Lancamento) LIKE UPPER(:searchItem) OR " +
-            "UPPER(l.category) LIKE UPPER(:searchItem)) " +
-            "ORDER BY l.data_Lancamento")
+    @NamedNativeQuery(name = "lancamento.maisRecentesBySearching", query = Lancamento.LANCAMENTO_MAIS_RECENTES_BY_SEARCHING, resultClass = Lancamento.class)
 })
 
 @NamedQueries(value = {
@@ -43,6 +38,13 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Lancamento {
+
+    public static final String LANCAMENTO_MAIS_RECENTES_BY_SEARCHING = "SELECT * FROM Lancamento l WHERE EXTRACT(YEAR FROM l.data_Lancamento) = EXTRACT(YEAR FROM CURRENT_DATE) " +
+            "AND EXTRACT(MONTH FROM l.data_Lancamento) = EXTRACT(MONTH FROM CURRENT_DATE) " +
+            "AND (UPPER(l.descricao) LIKE UPPER(:searchItem) OR " +
+            "UPPER(l.tipo_Lancamento) LIKE UPPER(:searchItem) OR " +
+            "UPPER(l.category) LIKE UPPER(:searchItem)) " +
+            "ORDER BY l.data_Lancamento";
 
     public static final String CURRENT_MONTH_CLAUSE = "year(l.dataLancamento) = year(current_date) and " +
             " month(l.dataLancamento) = month(current_date)";

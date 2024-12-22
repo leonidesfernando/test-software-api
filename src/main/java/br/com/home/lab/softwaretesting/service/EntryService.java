@@ -53,16 +53,9 @@ public class EntryService {
                 .setMaxResults(MAXIMO_LANCAMENTOS).getResultList();
     }
 
+    @SuppressWarnings("unchecked")
     public List<Lancamento> buscaTodosMesCorrente(int pagina, String itemBusca){
-
-        String sql = "SELECT * FROM Lancamento l WHERE EXTRACT(YEAR FROM l.data_Lancamento) = EXTRACT(YEAR FROM CURRENT_DATE) " +
-                "AND EXTRACT(MONTH FROM l.data_Lancamento) = EXTRACT(MONTH FROM CURRENT_DATE) " +
-                "AND (UPPER(l.descricao) LIKE UPPER(:searchItem) OR " +
-                "UPPER(l.tipo_Lancamento) LIKE UPPER(:searchItem) OR " +
-                "UPPER(l.category) LIKE UPPER(:searchItem)) " +
-                "ORDER BY l.data_Lancamento";
-        //"'%"+item+"%'"
-        return entityManager.createNativeQuery(sql, Lancamento.class)
+        return entityManager.createNativeQuery(Lancamento.LANCAMENTO_MAIS_RECENTES_BY_SEARCHING, Lancamento.class)
                 .setParameter("searchItem", "%"+itemBusca+"%")
                 .setFirstResult(calculaPrimeiroRegistroPorPagina(pagina))
                 .setMaxResults(MAXIMO_LANCAMENTOS).getResultList();
