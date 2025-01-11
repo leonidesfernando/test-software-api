@@ -8,7 +8,9 @@ import br.com.home.lab.softwaretesting.converter.StringToMoneyConverter;
 import br.com.home.lab.softwaretesting.model.Category;
 import br.com.home.lab.softwaretesting.model.Lancamento;
 import br.com.home.lab.softwaretesting.model.TipoLancamento;
+import br.com.home.lab.softwaretesting.model.User;
 import br.com.home.lab.softwaretesting.repository.LancamentoRepository;
+import br.com.home.lab.softwaretesting.repository.UserRepository;
 import br.com.home.lab.softwaretesting.util.DataGen;
 import br.com.home.lab.softwaretesting.util.LancamentoGen;
 import lombok.AllArgsConstructor;
@@ -47,7 +49,7 @@ import static org.mockito.Mockito.*;
 
 @Execution(ExecutionMode.CONCURRENT)
 @SpringBootTest
-class LancamentoServiceTest {
+class EntryServiceTest {
 
     @Spy
     @InjectMocks
@@ -55,6 +57,12 @@ class LancamentoServiceTest {
 
     @Mock
     private LancamentoRepository lancamentoRepository;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private UserDetailsServiceImpl userDetailsService;
 
     @Mock
     private EntityManager entityManager;
@@ -156,7 +164,7 @@ class LancamentoServiceTest {
 
     @Test
     void buscaPorIdInexistenteTest(){
-        Long id = 10L;
+        Long id = 99L;
         when(lancamentoRepository.findById(id)).thenReturn(Optional.empty());
         IllegalStateException exe = assertThrows(IllegalStateException.class, () ->
                 entryService.searchById(id)
@@ -172,6 +180,21 @@ class LancamentoServiceTest {
         var opt = lancamentoRepository.findById(id);
         assertThat(opt.orElseThrow(() -> new IllegalStateException("Deveria ter o Lancamento pelo id: " + id)))
                 .isEqualTo(lancamento);
+    }
+
+
+    @Test
+    void loadUserByUsername_ShouldReturnUserDetails_WhenUserExists() {
+        // Arrange
+        String username = "user";
+        User user = new User(username, "", "a");
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+
+        // Act
+        userDetailsService.loadUserByUsername(username);
+
+        verify(userDetailsService).loadUserByUsername(username);
     }
 
     @Test
@@ -302,7 +325,7 @@ class LancamentoServiceTest {
     @ParameterizedTest
     @MethodSource("genAjaxSearchData")
     void ajaxSearchTestMesCorrente(List<Lancamento> lancamentos, final BigDecimal totalSaida, final BigDecimal totalEntrada){
-        FormSearch formSearch = new FormSearch("searchItem", true, 1);
+        FormSearch formSearch = new FormSearch("searchItem", true, 0);
         ajaxSearch(formSearch, lancamentos, totalSaida, totalEntrada);
     }
 

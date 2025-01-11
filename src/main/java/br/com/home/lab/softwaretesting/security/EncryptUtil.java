@@ -3,7 +3,6 @@ package br.com.home.lab.softwaretesting.security;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
@@ -25,7 +24,7 @@ public class EncryptUtil {
             String jsonString = new String(decodedBytes, StandardCharsets.UTF_8);
             ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.readValue(jsonString, type);
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new IllegalStateException("Fail to decode object",e);
         }
     }
