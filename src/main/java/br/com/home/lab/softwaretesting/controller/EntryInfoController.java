@@ -14,7 +14,7 @@ import java.util.Set;
 public class EntryInfoController {
 
     private Set<String> categories = Set.of("food","wage","leisure","phone.internet",
-            "loan","investiments","clothing", "other");
+            "loan","investments","clothing", "other");
 
     private Set<String> entryTypes = Set.of("income","expense","transf");
 

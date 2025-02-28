@@ -161,8 +161,8 @@ public class LancamentoService {
         DateFormat dateFormat = new SimpleDateFormat(Constantes.dd_MM_yyyy_SLASH);
         resultado.forEach(r -> {
                     String categoria = "";
-                    if (Objects.nonNull(r.getCategoria())) {
-                        categoria = r.getCategoria().getNome();
+                    if (Objects.nonNull(r.getCategory())) {
+                        categoria = r.getCategory().getNome();
                     }
                     lancamentos.add(
                             new LancamentoRecord(r.getId(),

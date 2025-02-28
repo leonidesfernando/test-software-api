@@ -19,8 +19,8 @@ public enum Categoria {
     CAR ("car"),
     @JsonProperty("loan")
     LOAN("loan"),
-    @JsonProperty("investiments")
-    INVESTIMENTS("investiments"),
+    @JsonProperty("investments")
+    INVESTMENTS("investments"),
     @JsonProperty("clothing")
     CLOTHING("clothing"),
     @JsonProperty("other")

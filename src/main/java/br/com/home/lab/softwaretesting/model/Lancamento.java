@@ -24,8 +24,8 @@ import java.util.Date;
                 query = "select new br.com.home.lab.softwaretesting.controller.record.TotalLancamentoRecord(sum(l.valor), l.tipoLancamento) " +
                         " from Lancamento l where l.dataLancamento between :dataInicial and :dataFinal group by l.tipoLancamento"),
         @NamedQuery(name = "lancamento.totalLancamentosPorPeriodoPorCategoria",
-                query = "select new br.com.home.lab.softwaretesting.controller.record.TotalLancamentoCategoriaRecord(sum(l.valor), l.tipoLancamento, l.categoria) " +
-                        " from Lancamento l where l.dataLancamento between :dataInicial and :dataFinal group by l.tipoLancamento, l.categoria order by l.tipoLancamento"),
+                query = "select new br.com.home.lab.softwaretesting.controller.record.TotalLancamentoCategoriaRecord(sum(l.valor), l.tipoLancamento, l.category) " +
+                        " from Lancamento l where l.dataLancamento between :dataInicial and :dataFinal group by l.tipoLancamento, l.category order by l.tipoLancamento"),
         @NamedQuery(name = "lancamento.soma.por.tipolancamento", query = "select sum(l.valor) from Lancamento l where l.tipoLancamento = :tipoLancamento")
 })
 
@@ -40,7 +40,7 @@ public class Lancamento {
 
     public static final String SEARCH_BY_DESCRIPTION_OR_CATEGORY_ENTRY_TYPE  = "(upper(l.descricao) like upper( :itemBusca)) or " +
             " (upper(l.tipoLancamento) like upper( :itemBusca)) or " +
-            " (upper(l.categoria) like upper( :itemBusca)) ";
+            " (upper(l.category) like upper( :itemBusca)) ";
 
     @Id
     @GeneratedValue
@@ -75,5 +75,5 @@ public class Lancamento {
     @Getter
     @Setter
     @Enumerated(EnumType.STRING)
-    private Categoria categoria;
+    private Categoria category;
 }

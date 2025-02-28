@@ -60,7 +60,7 @@ public class LancamentoController {
                 lancamento.getValor().toString(),
                 dateFormat.format(lancamento.getDataLancamento()),
                 lancamento.getTipoLancamento().getTipo(),
-                lancamento.getCategoria().getNome());
+                lancamento.getCategory().getNome());
         return ResponseEntity.ok(record);
     }
 
