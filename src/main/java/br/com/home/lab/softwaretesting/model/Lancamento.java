@@ -37,6 +37,7 @@ import java.util.Date;
 @EqualsAndHashCode(of = {"id"})
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class Lancamento {
 
     public static final String LANCAMENTO_MAIS_RECENTES_BY_SEARCHING = "SELECT * FROM Lancamento l WHERE EXTRACT(YEAR FROM l.data_Lancamento) = EXTRACT(YEAR FROM CURRENT_DATE) " +
