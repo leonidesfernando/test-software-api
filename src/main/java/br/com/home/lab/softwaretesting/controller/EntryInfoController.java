@@ -13,10 +13,10 @@ import java.util.Set;
 @RequestMapping("/api/entryInfo")
 public class EntryInfoController {
 
-    private Set<String> categories = Set.of("food","wage","leisure","phone.internet",
+    private final Set<String> categories = Set.of("food","wage","leisure","phone.internet",
             "loan","investments","clothing", "other");
 
-    private Set<String> entryTypes = Set.of("income","expense","transf");
+    private final Set<String> entryTypes = Set.of("income","expense","transf");
 
     @GetMapping("/categories")
     public ResponseEntity<Set<String>> categories(){
