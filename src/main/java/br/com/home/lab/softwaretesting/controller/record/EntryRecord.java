@@ -5,6 +5,7 @@ import br.com.home.lab.softwaretesting.converter.StringToMoneyConverter;
 import br.com.home.lab.softwaretesting.model.Category;
 import br.com.home.lab.softwaretesting.model.Lancamento;
 import br.com.home.lab.softwaretesting.model.TipoLancamento;
+import br.com.home.lab.softwaretesting.model.User;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
@@ -16,7 +17,8 @@ public record EntryRecord(
         String amount,
         String entryDate,
         String entryType,
-        String category
+        String category,
+        long userId
 ) {
 
     public Lancamento build(){
@@ -24,7 +26,8 @@ public record EntryRecord(
                 getAmount(),
                 getEntryDate(),
                 getEntryType(),
-                getCategory()
+                getCategory(),
+                new User(userId())
         );
     }
 

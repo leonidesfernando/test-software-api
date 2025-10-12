@@ -58,19 +58,28 @@ public class EncryptedEntryController {
         if(!violations.isEmpty()) {
             return ResponseEntity.badRequest().body(new MessageResponse(violations));
         }
+        var responseEntity = AuthController.isLoggedUserForbidden(lancamento.getUser().getId());
+        if(responseEntity != null){
+            return responseEntity;
+        }
         lancamento = entryService.save(lancamento);
         return ResponseEntity.ok().body(new MessageResponse("entry.added", lancamento.getId()));
     }
 
     @GetMapping("/get/{id}")
-    public ResponseEntity<DataEncrypt> getById(@PathVariable("id") Long id){
+    public ResponseEntity<?> getById(@PathVariable("id") Long id){
         var lancamento = entryService.searchById(id);
+        var responseEntity = AuthController.isLoggedUserForbidden(lancamento.getUser().getId());
+        if(responseEntity != null){
+            return responseEntity;
+        }
         DateFormat dateFormat = new SimpleDateFormat(Constantes.dd_MM_yyyy_SLASH);
         EntryRecord entityRecord = new EntryRecord(lancamento.getId(), lancamento.getDescricao(),
                 lancamento.getValor().toString(),
                 dateFormat.format(lancamento.getDataLancamento()),
                 lancamento.getTipoLancamento().getTipo(),
-                lancamento.getCategory().getNome());
+                lancamento.getCategory().getNome(),
+                lancamento.getUser().getId());
         return ResponseEntity.ok(encode(entityRecord));
     }
 
@@ -88,6 +97,10 @@ public class EncryptedEntryController {
         if(!violations.isEmpty()) {
             return ResponseEntity.badRequest().body(new MessageResponse(violations));
         }
+        var responseEntity = AuthController.isLoggedUserForbidden(lancamento.getUser().getId());
+        if(responseEntity != null){
+            return responseEntity;
+        }
         entryService.save(lancamento);
         return ResponseEntity.ok().body(new MessageResponse("entry.updated", lancamento.getId()));
     }
@@ -101,13 +114,25 @@ public class EncryptedEntryController {
 
     @DeleteMapping(value = "/remove/{id}")
     public ResponseEntity<MessageResponse> remove(@PathVariable("id") Long id){
+        var lancamento = entryService.searchById(id);
+        var responseEntity = AuthController.isLoggedUserForbidden(lancamento.getUser().getId());
+        if(responseEntity != null){
+            return responseEntity;
+        }
         entryService.remover(id);
         return ResponseEntity.ok().body(new MessageResponse("entry.removed", id));
     }
 
+
+    /*@GetMapping(value = "/prepareRemoveAll")
+    public ResponseEntity prepareRemoveAll(){
+
+    }*/
+
     @DeleteMapping(value = "/removeAll")
     public ResponseEntity<MessageResponse> removeAll(){
-        entryService.truncateTable();
+        final var loggedUser = AuthController.getLoggedUser();
+        entryService.removeAllByUser(loggedUser.getId());
         return ResponseEntity.ok().body(new MessageResponse("all.entries.have.been.removed"));
     }
 }

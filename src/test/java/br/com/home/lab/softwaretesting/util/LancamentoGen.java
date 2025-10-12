@@ -3,6 +3,7 @@ package br.com.home.lab.softwaretesting.util;
 import br.com.home.lab.softwaretesting.model.Category;
 import br.com.home.lab.softwaretesting.model.Lancamento;
 import br.com.home.lab.softwaretesting.model.TipoLancamento;
+import br.com.home.lab.softwaretesting.model.User;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -26,6 +27,7 @@ public class LancamentoGen {
                 .comDescricao(DataGen.productName())
                 .comDataLancamento(DataGen.date())
                 .comCategoria(categories[indice])
+                .comUsuario()
                 .build();
     }
 
@@ -64,6 +66,10 @@ public class LancamentoGen {
 
         public LancamentoBuilder comCategoria(Category category) {
             lancamento.setCategory(category);
+            return this;
+        }
+        public LancamentoBuilder comUsuario() {
+            lancamento.setUser(new User(1L));
             return this;
         }
     }

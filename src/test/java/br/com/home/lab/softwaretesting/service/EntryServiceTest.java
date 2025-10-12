@@ -51,6 +51,9 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 class EntryServiceTest {
 
+    private static final long USER_ID_MOCK = 1L;
+    private  static final User LOGGED_USER_MOCK = new User(USER_ID_MOCK);
+
     @Spy
     @InjectMocks
     private EntryService entryService;
@@ -120,6 +123,7 @@ class EntryServiceTest {
                 .comDescricao(DataGen.productName())
                 .comDataLancamento(DataGen.date())
                 .comCategoria(Category.WAGE)
+                .comUsuario()
                 .build());
 
         when(entryService.somaValoresPorTipo(lancamentos, TipoLancamento.INCOME)).thenCallRealMethod();
@@ -187,7 +191,7 @@ class EntryServiceTest {
     void loadUserByUsername_ShouldReturnUserDetails_WhenUserExists() {
         // Arrange
         String username = "user";
-        User user = new User(username, "", "a");
+        User user = new User("Name",username, "", "a");
 
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
 
@@ -232,9 +236,11 @@ class EntryServiceTest {
         int pagina = 3;
         String itemBusca = "searchItem";
         mockQueryToBuscaTodosMeses(lancamentos, itemBusca, pagina);
-        var result = entryService.buscaTodosBySearching(pagina, itemBusca);
+
+        var result = entryService.buscaTodosBySearching(pagina, itemBusca, LOGGED_USER_MOCK);
         assertThat(lancamentos).hasSameSizeAs(result);
-        verify(entryService).buscaTodosBySearching(pagina, itemBusca);
+
+        verify(entryService).buscaTodosBySearching(pagina, itemBusca, LOGGED_USER_MOCK);
     }
 
     @ParameterizedTest
@@ -254,7 +260,7 @@ class EntryServiceTest {
     void buscaTest(List<Lancamento> lancamentos){
         String itemBusca = "searchItem";
         mockQueryToBuscaTodosMesCorrente(lancamentos, itemBusca, 1);
-        assertThat(entryService.buscaTodosMesCorrente(1, itemBusca)).hasSameSizeAs(lancamentos);
+        assertThat(entryService.buscaTodosMesCorrente(1, itemBusca, LOGGED_USER_MOCK)).hasSameSizeAs(lancamentos);
     }
 
     @ParameterizedTest
@@ -264,7 +270,7 @@ class EntryServiceTest {
         int pagina = 1;
 
         mockQueryToBuscaTodosMesCorrente(lancamentos, itemBusca, pagina);
-        int size = entryService.buscaTodosMesCorrente(pagina, itemBusca).size();
+        int size = entryService.buscaTodosMesCorrente(pagina, itemBusca, LOGGED_USER_MOCK).size();
         assertEquals(size, lancamentos.size());
     }
 
@@ -287,17 +293,19 @@ class EntryServiceTest {
 
     private void mockQueryToBuscaTodosMesCorrente(List<Lancamento> lancamentos, String itemBusca, int pagina){
         when(entityManager.createNativeQuery(Lancamento.LANCAMENTO_MAIS_RECENTES_BY_SEARCHING, Lancamento.class)).thenReturn(query);
+        when(query.setParameter("userId", USER_ID_MOCK)).thenReturn(query);
         when(query.setParameter("searchItem", "%"+itemBusca+"%")).thenReturn(query);
         when(query.setFirstResult(anyInt())).thenReturn(query);
         when(query.setMaxResults(MAXIMO_LANCAMENTOS)).thenReturn(query);
         when(query.getResultList()).thenReturn(lancamentos);
 
-        when(entryService.buscaTodosMesCorrente(pagina, itemBusca)).thenReturn(lancamentos);
+        when(entryService.buscaTodosMesCorrente(pagina, itemBusca, LOGGED_USER_MOCK)).thenReturn(lancamentos);
     }
 
     private void mockQueryToBuscaTodosMeses(List<Lancamento> lancamentos, String itemBusca, int pagina){
         when(entityManager.createNamedQuery("lancamento.BySearching", Lancamento.class)).thenReturn(query);
-        when(query.setParameter("searchItem", "'%"+itemBusca+"%'")).thenReturn(query);
+        when(query.setParameter("user", LOGGED_USER_MOCK)).thenReturn(query);
+        when(query.setParameter("searchItem", itemBusca)).thenReturn(query);
         when(query.setFirstResult(entryService.calculaPrimeiroRegistroPorPagina(pagina))).thenReturn(query);
         when(query.setMaxResults(MAXIMO_LANCAMENTOS)).thenReturn(query);
         when(query.getResultList()).thenReturn(lancamentos);
@@ -325,20 +333,14 @@ class EntryServiceTest {
     @ParameterizedTest
     @MethodSource("genAjaxSearchData")
     void ajaxSearchTestMesCorrente(List<Lancamento> lancamentos, final BigDecimal totalSaida, final BigDecimal totalEntrada){
-        FormSearch formSearch = new FormSearch("searchItem", true, 0);
+        FormSearch formSearch = new FormSearch("searchItem", true, 0, 1L);
         ajaxSearch(formSearch, lancamentos, totalSaida, totalEntrada);
     }
 
     @ParameterizedTest
     @MethodSource("genAjaxSearchData")
     void ajaxSearchTestTodosMeses(List<Lancamento> lancamentos, final BigDecimal totalSaida, final BigDecimal totalEntrada){
-        FormSearch formSearch = new FormSearch("searchItem", false, 1);
-        lancamentos.add(LancamentoGen.builder()
-                .comTipo(TipoLancamento.INCOME)
-                .comDescricao(DataGen.productName())
-                .comDataLancamento(DataGen.date())
-                .comValor(DataGen.moneyValue())
-                .build());
+        FormSearch formSearch = new FormSearch("searchItem", false, 1, 1L);
         mockQueryToBuscaTodosMeses(lancamentos, formSearch.searchItem(), 1);
         ajaxSearch(formSearch, lancamentos, totalSaida, totalEntrada);
     }
@@ -346,16 +348,17 @@ class EntryServiceTest {
     private void ajaxSearch(FormSearch formSearch, List<Lancamento> lancamentos, final BigDecimal totalSaida, final BigDecimal totalEntrada){
         String itemBusca = formSearch.searchItem();
         long totalRegistros = 123L;
+
         mockToCount(formSearch.searchItem(), totalRegistros);
 
         var resultBuscaTodosMesCorrente = formSearch.searchOnlyCurrentMonth();
 
         if(resultBuscaTodosMesCorrente){
             mockQueryToBuscaTodosMesCorrente(lancamentos, itemBusca, 1);
-            entryService.buscaTodosMesCorrente(1, formSearch.searchItem());
+            entryService.buscaTodosMesCorrente(1, formSearch.searchItem(), LOGGED_USER_MOCK);
         }else{
             //TODO: adicionar o mock
-            entryService.buscaTodosBySearching(1, itemBusca);
+            entryService.buscaTodosBySearching(1, itemBusca, LOGGED_USER_MOCK);
         }
 
         //assertThat(resultBuscaTodosMesCorrente).hasSameSizeAs(lancamentos);
@@ -375,6 +378,7 @@ class EntryServiceTest {
         assertEquals(converter.convert(resultado.grandTotalWinnings()), totalGeralEntrada.setScale(2, RoundingMode.HALF_UP));
         assertThat(resultado.entries()).hasSameSizeAs(lancamentos);
         assertThat(resultado.totalRecords()).isEqualTo(totalRegistros);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(LOGGED_USER_MOCK));
         when(entryService.ajaxSearch(formSearch)).thenReturn(resultado);
         entryService.ajaxSearch(formSearch);
     }
@@ -429,9 +433,9 @@ class EntryServiceTest {
 
     @Test
     void truncateTableTest(){
-        doNothing().when(lancamentoRepository).truncateTable();
-        entryService.truncateTable();
-        verify(lancamentoRepository).truncateTable();
+        doNothing().when(lancamentoRepository).removeAllByUser(anyLong());
+        entryService.removeAllByUser(1L);
+        verify(lancamentoRepository).removeAllByUser(anyLong());
     }
 
     @SuppressWarnings("unchecked")

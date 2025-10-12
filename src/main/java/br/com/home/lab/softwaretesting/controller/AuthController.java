@@ -1,6 +1,8 @@
 package br.com.home.lab.softwaretesting.controller;
 
 
+import br.com.home.lab.softwaretesting.controller.record.UserEmailRecord;
+import br.com.home.lab.softwaretesting.controller.record.UserIDRecord;
 import br.com.home.lab.softwaretesting.model.ERole;
 import br.com.home.lab.softwaretesting.model.Role;
 import br.com.home.lab.softwaretesting.model.User;
@@ -14,6 +16,7 @@ import br.com.home.lab.softwaretesting.security.jwt.JwtUtils;
 import br.com.home.lab.softwaretesting.service.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,13 +25,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static br.com.home.lab.softwaretesting.util.Constantes.BEARER;
 
@@ -62,9 +69,10 @@ public class AuthController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = jwtUtil.generateJwtToken(authentication);
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        List<String> roles = userDetails.getAuthorities().stream()
+        List<String> roles = userDetails.getAuthorities()
+                .stream()
                 .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
+                .toList();
         JwtResponse res = new JwtResponse(jwt, BEARER, userDetails.getId(), userDetails.getUsername(),
                 userDetails.getEmail(), roles);
         return ResponseEntity.ok(res);
@@ -73,6 +81,7 @@ public class AuthController {
 
     @PostMapping("/signout")
     public ResponseEntity<MessageResponse> logoutUser() {
+        //TODO: receive the user to be validate if is the logged user and then logout
         ResponseCookie cookie = jwtUtil.getCleanJwtCookie();
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(new MessageResponse("user.signed.out"));
@@ -93,7 +102,7 @@ public class AuthController {
         }
 
         // Create new user's account
-        User user = new User(signUpRequest.username(),
+        User user = new User(signUpRequest.name(), signUpRequest.username(),
                 signUpRequest.email(),
                 passwordEncoder.encode(signUpRequest.password()));
 
@@ -131,4 +140,47 @@ public class AuthController {
         userRepository.save(user);
         return ResponseEntity.ok(new MessageResponse("user.registered.successfully"));
     }
+
+    @PostMapping("/findUserByAdmin")
+    public ResponseEntity<MessageResponse> findUserByAdmin(@RequestBody UserEmailRecord userToBeFound){
+        boolean userExists = userRepository.existsByEmail(userToBeFound.email());
+        if(userExists){
+            return ResponseEntity.ok(new MessageResponse("user.found"));
+        }else{
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new MessageResponse("user.not.found"));
+        }
+    }
+
+    @Deprecated
+    @DeleteMapping("/removeUser")
+    public ResponseEntity<MessageResponse> removeUser(@RequestBody UserIDRecord userTobeRemoved){
+        var loggedUser = getLoggedUser();
+        if(!loggedUser.getId().equals(userTobeRemoved.id())){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new MessageResponse("user.to.be.removed.does.not.match.logged.in.user", null));
+        }
+        try {
+            userRepository.deleteById(userTobeRemoved.id());
+            jwtUtil.getCleanJwtCookie();
+            return ResponseEntity.ok().body(new MessageResponse("user.removed", userTobeRemoved.id()));
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new MessageResponse("user.could.not.be.removed", userTobeRemoved.id()));
+        }
+    }
+
+    public static UserDetailsImpl getLoggedUser(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return (UserDetailsImpl) authentication.getPrincipal();
+    }
+
+    public static ResponseEntity<MessageResponse> isLoggedUserForbidden(Long userId){
+        if(!userId.equals(getLoggedUser().getId())){
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new MessageResponse("entry.does.not.belong.to.logged.in.user", null));
+        }
+        return null;
+    }
+
 }

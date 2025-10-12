@@ -1,10 +1,16 @@
 package br.com.home.lab.softwaretesting.service;
 
-import br.com.home.lab.softwaretesting.controller.record.*;
+import br.com.home.lab.softwaretesting.controller.record.EntryRecord;
+import br.com.home.lab.softwaretesting.controller.record.FormSearch;
+import br.com.home.lab.softwaretesting.controller.record.ResultRecord;
+import br.com.home.lab.softwaretesting.controller.record.TotalLancamentoCategoriaRecord;
+import br.com.home.lab.softwaretesting.controller.record.TotalLancamentoRecord;
 import br.com.home.lab.softwaretesting.converter.MoneyToStringConverter;
 import br.com.home.lab.softwaretesting.model.Lancamento;
 import br.com.home.lab.softwaretesting.model.TipoLancamento;
+import br.com.home.lab.softwaretesting.model.User;
 import br.com.home.lab.softwaretesting.repository.LancamentoRepository;
+import br.com.home.lab.softwaretesting.repository.UserRepository;
 import br.com.home.lab.softwaretesting.util.Constantes;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,10 +20,15 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import static br.com.home.lab.softwaretesting.model.Lancamento.CURRENT_MONTH_CLAUSE;
 
@@ -34,6 +45,9 @@ public class EntryService {
     private EntityManager entityManager;
     static final int MAXIMO_LANCAMENTOS = 10;
     private LancamentoRepository lancamentoRepository;
+
+    @NotNull
+    private UserRepository userRepository;
 
 
     @Transactional
@@ -54,16 +68,18 @@ public class EntryService {
     }
 
     @SuppressWarnings("unchecked")
-    public List<Lancamento> buscaTodosMesCorrente(int pagina, String itemBusca){
+    public List<Lancamento> buscaTodosMesCorrente(int pagina, String itemBusca, User loggedUser) {
         return entityManager.createNativeQuery(Lancamento.LANCAMENTO_MAIS_RECENTES_BY_SEARCHING, Lancamento.class)
+                .setParameter("userId", loggedUser.getId())
                 .setParameter("searchItem", "%"+itemBusca+"%")
                 .setFirstResult(calculaPrimeiroRegistroPorPagina(pagina))
                 .setMaxResults(MAXIMO_LANCAMENTOS).getResultList();
     }
 
-    public List<Lancamento> buscaTodosBySearching(int pagina, String itemBusca){
+    public List<Lancamento> buscaTodosBySearching(int pagina, String itemBusca, User loggedUser) {
         return entityManager.createNamedQuery("lancamento.BySearching", Lancamento.class)
-                .setParameter("searchItem", "'%"+itemBusca+"%'")
+                .setParameter("user", loggedUser)
+                .setParameter("searchItem", itemBusca)
                 .setFirstResult(calculaPrimeiroRegistroPorPagina(pagina))
                 .setMaxResults(MAXIMO_LANCAMENTOS).getResultList();
     }
@@ -151,10 +167,13 @@ public class EntryService {
     public ResultRecord ajaxSearch(FormSearch formSearch) {
         final var itemBusca = formSearch.searchItem();
         final var page = formSearch.page() > 0 ? formSearch.page() : 1;
+        final User loggedUser = userRepository.findById(formSearch.userId())
+                .orElseThrow(() -> new IllegalStateException("Deveria ter o usuário pelo id: " + formSearch.userId()));
+
         if(formSearch.searchOnlyCurrentMonth()){
-            return getResultado(buscaTodosMesCorrente(page, itemBusca), contaCurrentMonth(itemBusca), itemBusca, page);
+            return getResultado(buscaTodosMesCorrente(page, itemBusca, loggedUser), contaCurrentMonth(itemBusca), itemBusca, page);
         }
-        return getResultado(buscaTodosBySearching(page, itemBusca), conta(itemBusca), itemBusca, page);
+        return getResultado(buscaTodosBySearching(page, itemBusca, loggedUser), conta(itemBusca), itemBusca, page);
     }
 
     ResultRecord getResultado(final List<Lancamento> resultado, long totalRegistros, String itemSearch, int page) {
@@ -172,7 +191,8 @@ public class EntryService {
                                     converter.convert(r.getValor()),
                                     dateFormat.format(r.getDataLancamento()),
                                     r.getTipoLancamento().getTipo(),
-                                    categoria)
+                                    categoria,
+                                    r.getUser().getId())
 
                     );
                 }
@@ -226,7 +246,7 @@ public class EntryService {
     }
 
     @Transactional
-    public void truncateTable(){
-        lancamentoRepository.truncateTable();
+    public void removeAllByUser(long userId){
+        lancamentoRepository.removeAllByUser(userId);
     }
 }
