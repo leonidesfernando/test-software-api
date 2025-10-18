@@ -37,9 +37,9 @@ import static br.com.home.lab.softwaretesting.model.Lancamento.CURRENT_MONTH_CLA
 public class EntryService {
 
     static final String SQL_COUNT_BASE = "select count(*) from Lancamento l where  ";
-    static final String SQL_COUNT_WHERE = " (upper(l.descricao) like upper( :searchItem)) " +
+    static final String SQL_COUNT_WHERE = " ( (upper(l.descricao) like upper( :searchItem)) " +
             "  or (upper(l.tipoLancamento) like upper( :searchItem)) " +
-            " or (upper(l.category) like upper( :searchItem))";
+            " or (upper(l.category) like upper( :searchItem)) ) and l.user = :user ";
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -139,14 +139,16 @@ public class EntryService {
         return paginas;
     }
 
-    public long conta(String itemBusca) {
+    public long conta(String itemBusca, User loggedUser) {
         TypedQuery<Long> query = entityManager.createQuery(getCountSql(itemBusca), Long.class);
+        query.setParameter("user", loggedUser);
         return query.getSingleResult();
     }
 
-    public long contaCurrentMonth(String itemBusca){
+    public long contaCurrentMonth(String itemBusca, User loggedUser){
         String sql = getCountSql(itemBusca) + " and " + CURRENT_MONTH_CLAUSE;
         TypedQuery<Long> query = entityManager.createQuery(sql, Long.class);
+        query.setParameter("user", loggedUser);
         return query.getSingleResult();
     }
 
@@ -171,9 +173,9 @@ public class EntryService {
                 .orElseThrow(() -> new IllegalStateException("Deveria ter o usuário pelo id: " + formSearch.userId()));
 
         if(formSearch.searchOnlyCurrentMonth()){
-            return getResultado(buscaTodosMesCorrente(page, itemBusca, loggedUser), contaCurrentMonth(itemBusca), itemBusca, page);
+            return getResultado(buscaTodosMesCorrente(page, itemBusca, loggedUser), contaCurrentMonth(itemBusca, loggedUser), itemBusca, page);
         }
-        return getResultado(buscaTodosBySearching(page, itemBusca, loggedUser), conta(itemBusca), itemBusca, page);
+        return getResultado(buscaTodosBySearching(page, itemBusca, loggedUser), conta(itemBusca, loggedUser), itemBusca, page);
     }
 
     ResultRecord getResultado(final List<Lancamento> resultado, long totalRegistros, String itemSearch, int page) {

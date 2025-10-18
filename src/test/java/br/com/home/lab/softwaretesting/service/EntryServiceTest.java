@@ -73,7 +73,7 @@ class EntryServiceTest {
     TypedQuery query;
 
     @BeforeEach
-    public void init(){
+    void init(){
         MockitoAnnotations.openMocks(this);
     }
 
@@ -213,7 +213,7 @@ class EntryServiceTest {
         String sql = getCountSql(itemBusca) + " and " + CURRENT_MONTH_CLAUSE;
         when(entityManager.createQuery(sql, Long.class)).thenReturn(query);
         when(query.getSingleResult()).thenReturn(countValue);
-        assertThat(entryService.contaCurrentMonth(itemBusca)).isEqualTo(countValue);
+        assertThat(entryService.contaCurrentMonth(itemBusca, LOGGED_USER_MOCK)).isEqualTo(countValue);
     }
 
     @ParameterizedTest
@@ -279,7 +279,7 @@ class EntryServiceTest {
     void contaTodosLancamentosTest(){
         when(entityManager.createQuery(getCountSql(null), Long.class)).thenReturn(query);
         when(query.getSingleResult()).thenReturn(12L);
-        entryService.conta(null);
+        assertThat(entryService.conta(null, LOGGED_USER_MOCK)).isEqualTo(12L);
     }
 
     @Test
@@ -287,8 +287,7 @@ class EntryServiceTest {
         String itemBusca = "uma busca";
         long totalRegistros = 12L;
         mockToCount(itemBusca, totalRegistros);
-
-        entryService.conta(itemBusca);
+        assertThat(entryService.conta(itemBusca, LOGGED_USER_MOCK)).isEqualTo(totalRegistros);
     }
 
     private void mockQueryToBuscaTodosMesCorrente(List<Lancamento> lancamentos, String itemBusca, int pagina){
@@ -360,8 +359,6 @@ class EntryServiceTest {
             //TODO: adicionar o mock
             entryService.buscaTodosBySearching(1, itemBusca, LOGGED_USER_MOCK);
         }
-
-        //assertThat(resultBuscaTodosMesCorrente).hasSameSizeAs(lancamentos);
 
         final BigDecimal totalGeralSaida = totalSaida.multiply(BigDecimal.valueOf(2.5D));
         final BigDecimal totalGeralEntrada = totalEntrada.multiply(BigDecimal.valueOf(3L));
@@ -443,7 +440,7 @@ class EntryServiceTest {
         TypedQuery<Long> longTypedQuery = mock(TypedQuery.class);
         when(entityManager.createQuery(getCountSql(itemBusca), Long.class)).thenReturn(longTypedQuery);
         when(longTypedQuery.getSingleResult()).thenReturn(totalRegistros);
-        when(entryService.conta(itemBusca)).thenReturn(totalRegistros);
+        when(entryService.conta(itemBusca, LOGGED_USER_MOCK)).thenReturn(totalRegistros);
     }
 
 

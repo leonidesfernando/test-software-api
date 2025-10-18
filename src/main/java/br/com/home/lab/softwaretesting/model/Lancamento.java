@@ -50,7 +50,7 @@ public class Lancamento {
             "ORDER BY l.data_Lancamento";
 
     public static final String CURRENT_MONTH_CLAUSE = "year(l.dataLancamento) = year(current_date) and " +
-            " month(l.dataLancamento) = month(current_date)";
+            " month(l.dataLancamento) = month(current_date) and l.user = :user";
 
 
     public static final String SEARCH_BY_DESCRIPTION_OR_CATEGORY_ENTRY_TYPE  = " l.user = :user and " +
