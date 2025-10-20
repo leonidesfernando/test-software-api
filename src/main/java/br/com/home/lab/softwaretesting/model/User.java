@@ -31,6 +31,10 @@ public class User {
     private String username;
 
     @NotBlank
+    @Size(max = 255)
+    private String name;
+
+    @NotBlank
     @Size(max = 50)
     @Email
     private String email;
@@ -48,7 +52,12 @@ public class User {
     public User() {
     }
 
-    public User(String username, String email, String password) {
+    public User(Long id) {
+        this.id = id;
+    }
+
+    public User(String name, String username, String email, String password) {
+        this.name = name;
         this.username = username;
         this.email = email;
         this.password = password;

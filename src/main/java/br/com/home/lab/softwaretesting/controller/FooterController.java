@@ -20,6 +20,9 @@ public class FooterController {
     @Value("${db.name}")
     private String dbName;
 
+    @Value("${db.vendor}")
+    private String dbVendor;
+
     @GetMapping("/env")
     public ResponseEntity<String> env() {
         return ResponseEntity.ok(env);
@@ -28,5 +31,10 @@ public class FooterController {
     @GetMapping("/dbName")
     public ResponseEntity<String> dbName() {
         return ResponseEntity.ok(dbName);
+    }
+
+    @GetMapping("/dbVendor")
+    public ResponseEntity<String> dbVendor(){
+        return ResponseEntity.ok(dbVendor);
     }
 }

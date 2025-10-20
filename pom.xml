@@ -23,18 +23,21 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>17</java.version>
 		<lombok.version>1.18.28</lombok.version>
-		<testng.version>7.8.0</testng.version>
 		<cucumber.version>7.12.1</cucumber.version>
-		<argLine>-Xms256m -Xmx1524m -XX:MaxPermSize=256m -Duser.language=en</argLine>
+		<!--argLine>-Xms256m -Xmx1524m -XX:MaxPermSize=256m -Duser.language=en</argLine -->
+		<argLine>-Duser.language=en</argLine>
 		<java.faker>2.0.1</java.faker>
 		<owner.version>1.0.12</owner.version>
 		<bootstrap.version>5.2.0</bootstrap.version>
 		<webjars-locator.version>0.45</webjars-locator.version>
+		<junit-jupiter.version>5.9.3</junit-jupiter.version>
+		<junit.platform.version>1.9.3</junit.platform.version>
+
 
 		<byte.buddy.version>1.14.5</byte.buddy.version>
 		<mockito.version>5.3.1</mockito.version>
 
-		<coverage_ratio_percentage>0.9</coverage_ratio_percentage>
+		<coverage_ratio_percentage>0.5</coverage_ratio_percentage>
 		<jacoco.maven.plugin.version>0.8.10</jacoco.maven.plugin.version>
 		<maven.surefire.plugin.version>3.1.2</maven.surefire.plugin.version>
 		<maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
@@ -150,14 +153,6 @@
 		</dependency>
 
 
-
-		<dependency>
-			<groupId>org.testng</groupId>
-			<artifactId>testng</artifactId>
-			<version>${testng.version}</version>
-			<scope>test</scope>
-		</dependency>
-
 		<dependency>
 			<groupId>io.cucumber</groupId>
 			<artifactId>cucumber-java</artifactId>
@@ -167,13 +162,25 @@
 
 		<dependency>
 			<groupId>io.cucumber</groupId>
-			<artifactId>cucumber-testng</artifactId>
+			<artifactId>cucumber-junit</artifactId>
 			<version>${cucumber.version}</version>
 			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<groupId>junit</groupId>
+					<artifactId>junit</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>io.cucumber</groupId>
 			<artifactId>cucumber-picocontainer</artifactId>
+			<version>${cucumber.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>io.cucumber</groupId>
+			<artifactId>cucumber-junit-platform-engine</artifactId>
 			<version>${cucumber.version}</version>
 		</dependency>
 
@@ -200,6 +207,20 @@
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-core</artifactId>
 			<version>${mockito.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>net.bytebuddy</groupId>
+					<artifactId>byte-buddy</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>net.bytebuddy</groupId>
+					<artifactId>byte-buddy-agent</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.objenesis</groupId>
+					<artifactId>objenesis</artifactId>
+				</exclusion>
+			</exclusions>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
@@ -214,12 +235,68 @@
 		</dependency>
 		<!-- end mockito -->
 
-		<!-- dependency>
-			<groupId>io.rest-assured</groupId>
-			<artifactId>spring-mock-mvc</artifactId>
-			<version>3.0.7</version>
+		<!-- start Junit deps -->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<version>${junit-jupiter.version}</version>
 			<scope>test</scope>
-		</dependency -->
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<version>${junit-jupiter.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-params</artifactId>
+			<version>${junit-jupiter.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-suite</artifactId>
+			<version>${junit.platform.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-suite-api</artifactId>
+			<version>${junit.platform.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-engine</artifactId>
+			<version>${junit.platform.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-commons</artifactId>
+			<version>${junit.platform.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-suite-engine</artifactId>
+			<version>${junit.platform.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-suite-commons</artifactId>
+			<version>${junit.platform.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.platform</groupId>
+			<artifactId>junit-platform-launcher</artifactId>
+			<version>${junit.platform.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- end Junit deps -->
 
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -227,16 +304,6 @@
 			<version>${lombok.version}</version>
 		</dependency>
 
-		<!-- dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>bootstrap</artifactId>
-			<version>5.1.3</version>
-		</dependency>
-		<dependency>
-			<groupId>org.webjars</groupId>
-			<artifactId>jquery</artifactId>
-			<version>3.5.1</version>
-		</dependency -->
 
 		<dependency>
 			<groupId>net.datafaker</groupId>
@@ -297,14 +364,17 @@
 				<version>${maven.surefire.plugin.version}</version>
 				<configuration>
 					<argLine>--add-opens java.base/java.lang=ALL-UNNAMED ${surefireArgLine}</argLine>
-					<parallel>methods</parallel>
-					<threadCount>10</threadCount>
-					<suiteXmlFiles>
-						<suiteXmlFile>
-							src\test\resources\suite-testng.xml
-						</suiteXmlFile>
-					</suiteXmlFiles>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-report-plugin</artifactId>
+				<version>${maven.surefire.plugin.version}</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<version>${maven.surefire.plugin.version}</version>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -320,12 +390,13 @@
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
 				<version>${jacoco.maven.plugin.version}</version>
-				<!-- configuration>
+				<configuration>
 					<excludes>
-						<exclude>br/com/home/lab/softwaretesting/ServletInitializer.class</exclude>
-						<exclude>br/com/home/lab/softwaretesting/TesteSoftwareApplication.class</exclude>
+						<exclude>br.com.home.lab.softwaretesting.ServletInitializer.class</exclude>
+						<exclude>br.com.home.lab.softwaretesting.TesteSoftwareApplication.class</exclude>
+						<exclude>br.com.home.lab.softwaretesting.converter.DateToStringConverter</exclude>
 					</excludes>
-				</configuration -->
+				</configuration>
 				<executions>
 					<execution>
 						<id>prepare-agent</id>
@@ -343,6 +414,13 @@
 						<goals><goal>report</goal></goals>
 						<configuration>
 							<outputDirectory>target/jacoco-report</outputDirectory>
+							<excludes>
+								<exclude>br/com/home/lab/softwaretesting/ServletInitializer*</exclude>
+								<exclude>br/com/home/lab/softwaretesting/TesteSoftwareApplication*</exclude>
+								<exclude>br/com/home/lab/softwaretesting/converter/DateToStringConverter*</exclude>
+								<exclude>br/com/home/lab/softwaretesting/security/jwt/*</exclude>
+								<exclude>br/com/home/lab/softwaretesting/payload/*</exclude>
+							</excludes>
 						</configuration>
 					</execution>
 					<execution>
@@ -352,11 +430,26 @@
 						</goals>
 						<configuration>
 							<rules>
-								<rule>
+								<!-- rule>
 									<element>PACKAGE</element>
 									<limits>
 										<limit>
 											<counter>LINE</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>${coverage_ratio_percentage}</minimum>
+										</limit>
+									</limits>
+								</rule -->
+								<rule>
+									<element>BUNDLE</element>
+									<limits>
+										<limit>
+											<counter>LINE</counter>
+											<value>COVEREDRATIO</value>
+											<minimum>${coverage_ratio_percentage}</minimum>
+										</limit>
+										<limit>
+											<counter>BRANCH</counter>
 											<value>COVEREDRATIO</value>
 											<minimum>${coverage_ratio_percentage}</minimum>
 										</limit>

@@ -1,53 +1,58 @@
 package br.com.home.lab.softwaretesting.converter;
 
-import br.com.home.lab.softwaretesting.converter.StringToMoneyConverter;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.text.ParseException;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class StringToMoneyConverterTest {
+@Execution(ExecutionMode.CONCURRENT)
+class StringToMoneyConverterTest {
 
-    @DataProvider(parallel = true)
-    protected Object[][] values(Method method){
-        switch (method.getName()){
-            case "converterTest" -> {
-                return new Object[][]{{null, null},
-                        {"R$ 45,75", BigDecimal.valueOf(45.75)},
-                        {"R$ 34,45", BigDecimal.valueOf(34.45)},
-                        {"", null},
-                        {"R$3223", BigDecimal.valueOf(3223)},
-                        {"4343", BigDecimal.valueOf(4343)},
-                        {"44343,99", BigDecimal.valueOf(44343.99)},
-                        {"44.343,99", BigDecimal.valueOf(44343.99)},
-                        {"1.044.343,99", BigDecimal.valueOf(1044343.99)},
-                        {"R$", null},
-                        {"r$", null},
-
-                };
-            }
-            case "failConversionTest" -> {
-                return new Object[][]{{"sdfs"}, {"i34,kk"}};
-            }
-            default ->
-                throw new IllegalArgumentException("Unsupported method " + method.getName());
-        }
-    }
-
-    @Test(dataProvider = "values")
-    public void converterTest(String input, BigDecimal expected){
+    @ParameterizedTest
+    @MethodSource("converterData")
+    void converterTest(String input, BigDecimal expected) {
         StringToMoneyConverter converter = new StringToMoneyConverter();
         assertThat(converter.convert(input)).isEqualTo(expected);
 
     }
 
-    @Test(dataProvider = "values", expectedExceptions = {ParseException.class})
-    public void failConversionTest(String input){
-        StringToMoneyConverter converter = new StringToMoneyConverter();
-        converter.convert(input);
+    @ParameterizedTest
+    @MethodSource("failConversionData")
+    void failConversionTest(String input) {
+        final StringToMoneyConverter converter = new StringToMoneyConverter();
+        assertThrows(ParseException.class, () ->
+                converter.convert(input)
+        );
+    }
+
+    private static Stream<Arguments> converterData() {
+        return Stream.of(
+                Arguments.of(null, null),
+                Arguments.of("R$ 45,75", BigDecimal.valueOf(45.75)),
+                Arguments.of("R$ 34,45", BigDecimal.valueOf(34.45)),
+                Arguments.of("", null),
+                Arguments.of("R$3223", BigDecimal.valueOf(3223)),
+                Arguments.of("4343", BigDecimal.valueOf(4343)),
+                Arguments.of("44343,99", BigDecimal.valueOf(44343.99)),
+                Arguments.of("44.343,99", BigDecimal.valueOf(44343.99)),
+                Arguments.of("1.044.343,99", BigDecimal.valueOf(1044343.99)),
+                Arguments.of("R$", null),
+                Arguments.of("r$", null)
+        );
+    }
+
+    private static Stream<Arguments> failConversionData() {
+        return Stream.of(
+                Arguments.of("sdfs"),
+                Arguments.of("i34,kk")
+        );
     }
 }

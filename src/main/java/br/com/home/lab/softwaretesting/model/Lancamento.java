@@ -13,11 +13,15 @@ import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.Date;
 
+@NamedNativeQueries( value = {
+    @NamedNativeQuery(name = "lancamento.maisRecentesBySearching", query = Lancamento.LANCAMENTO_MAIS_RECENTES_BY_SEARCHING, resultClass = Lancamento.class)
+})
+
 @NamedQueries(value = {
         @NamedQuery(name = "lancamento.maisRecentes", query = "select l from Lancamento l where " + Lancamento.CURRENT_MONTH_CLAUSE + " order by l.dataLancamento"),
         @NamedQuery(name = "lancamento.byDataLancamento", query = "select l from Lancamento l order by l.dataLancamento"),
 
-        @NamedQuery(name = "lancamento.maisRecentesBySearching", query = "select l from Lancamento l where " + Lancamento.CURRENT_MONTH_CLAUSE + " and " + Lancamento.SEARCH_BY_DESCRIPTION_OR_CATEGORY_ENTRY_TYPE + " order by l.dataLancamento"),
+
         @NamedQuery(name = "lancamento.BySearching", query = "select l from Lancamento l where " + Lancamento.SEARCH_BY_DESCRIPTION_OR_CATEGORY_ENTRY_TYPE + " order by l.dataLancamento"),
 
         @NamedQuery(name = "lancamento.totalLancamentosPorPeriodo",
@@ -33,17 +37,30 @@ import java.util.Date;
 @EqualsAndHashCode(of = {"id"})
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class Lancamento {
 
-    public static final String CURRENT_MONTH_CLAUSE = "year(l.dataLancamento) = year(current_date) and " +
-            " month(l.dataLancamento) = month(current_date)";
+    public static final String LANCAMENTO_MAIS_RECENTES_BY_SEARCHING = "SELECT * FROM Lancamento l " +
+            "WHERE l.user_id = :userId AND " +
+            "EXTRACT(YEAR FROM l.data_Lancamento) = EXTRACT(YEAR FROM CURRENT_DATE) " +
+            "AND EXTRACT(MONTH FROM l.data_Lancamento) = EXTRACT(MONTH FROM CURRENT_DATE) " +
+            "AND (UPPER(l.descricao) LIKE UPPER(:searchItem) OR " +
+            "UPPER(l.tipo_Lancamento) LIKE UPPER(:searchItem) OR " +
+            "UPPER(l.category) LIKE UPPER(:searchItem)) " +
+            "ORDER BY l.data_Lancamento";
 
-    public static final String SEARCH_BY_DESCRIPTION_OR_CATEGORY_ENTRY_TYPE  = "(upper(l.descricao) like upper( :itemBusca)) or " +
-            " (upper(l.tipoLancamento) like upper( :itemBusca)) or " +
-            " (upper(l.category) like upper( :itemBusca)) ";
+    public static final String CURRENT_MONTH_CLAUSE = "year(l.dataLancamento) = year(current_date) and " +
+            " month(l.dataLancamento) = month(current_date) and l.user = :user";
+
+
+    public static final String SEARCH_BY_DESCRIPTION_OR_CATEGORY_ENTRY_TYPE  = " l.user = :user and " +
+        "( (upper(l.descricao) like upper(CONCAT('%', :searchItem, '%'))) or " +
+            " (upper(l.tipoLancamento) like upper(CONCAT('%', :searchItem, '%'))) or " +
+            " (upper(l.category) like upper(CONCAT('%', :searchItem, '%'))))";
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY, generator= "lancamentoGen")
+    @SequenceGenerator(name = "lancamentoGen", sequenceName = "lancamento_seq", allocationSize = 1)
     @Getter @Setter
     private long id;
 
@@ -53,27 +70,34 @@ public class Lancamento {
     private String descricao;
 
     @JsonDeserialize(using = MoneyDeserialize.class)
-    @NotNull(message = "O valor deve ser informado")
-    @Min(message = "O valor deve ser maior que zero", value = 0)
+    @NotNull(message = "Amount must be informed")
+    @Min(message = "Amount must be greater than zero", value = 0)
     @Getter
     @Setter
     private BigDecimal valor;
 
     @JsonFormat(pattern = Constantes.dd_MM_yyyy_SLASH)
-    @NotNull(message = "A data deve ser informada")
+    @NotNull(message = "Entry date must be informed")
     @Getter
     @Setter
     private Date dataLancamento;
 
-    @NotNull(message = "O tipo de lancamento deve ser informado")
+    @NotNull(message = "Entry type must be informed")
     @Getter
     @Setter
     @Enumerated(EnumType.STRING)
     private TipoLancamento tipoLancamento = TipoLancamento.EXPENSE;
 
-    @NotNull(message = "A categoria deve ser informada")
+    @NotNull(message = "Category must be informed")
     @Getter
     @Setter
     @Enumerated(EnumType.STRING)
-    private Categoria category;
+    private Category category;
+
+    @NotNull(message = "The user must be informed")
+    @Getter
+    @Setter
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 }
