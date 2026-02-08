@@ -20,7 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin(origins = "*", maxAge = 3600, exposedHeaders = {"Content-Disposition"})
 @RestController
 @RequestMapping("/api/sec/entries")
 public class EncryptedEntryController {

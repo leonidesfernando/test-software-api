@@ -168,12 +168,23 @@ class EntryServiceTest {
 
     @Test
     void buscaPorIdInexistenteTest(){
-        Long id = 99L;
+        Long id = -99L;
         when(lancamentoRepository.findById(id)).thenReturn(Optional.empty());
         IllegalStateException exe = assertThrows(IllegalStateException.class, () ->
                 entryService.searchById(id)
         );
         assertEquals("Deveria ter o Lancamento pelo id: " + id, exe.getMessage());
+    }
+
+    @Test
+    void searchByIdTest(){
+        var lancamento = novaRenda();
+        Long id = 11L;
+        when(lancamentoRepository.findById(id)).thenReturn(Optional.of(lancamento));
+        when(entryService.searchById(id)).thenReturn(lancamento);
+        var opt = entryService.searchById(id);
+        verify(entryService).searchById(id);
+        assertThat(opt).isEqualTo(lancamento);
     }
 
     @Test
@@ -327,6 +338,30 @@ class EntryServiceTest {
         when(entryService.calculaTotalPorTipoLancamento(TipoLancamento.INCOME)).thenReturn(totalGeralEntrada);
         when(entryService.calculaTotalGeralRenda()).thenReturn(totalGeralEntrada);
         assertThat(entryService.calculaTotalGeralRenda()).isEqualTo(totalGeralEntrada);
+    }
+
+    @Test
+    void ajaxSearch_shouldThrowException_whenUserDoesNotExist() {
+        // given
+        long userId = -1L;
+        FormSearch formSearch = new FormSearch(
+                "searchItem",
+                true,
+                0,
+                userId
+        );
+        when(userRepository.findById(userId))
+                .thenReturn(Optional.empty());
+
+        // when / then
+        IllegalStateException exception = assertThrows(
+                IllegalStateException.class,
+                () -> entryService.ajaxSearch(formSearch)
+        );
+        assertEquals(
+                "Deveria ter o usuário pelo id: " + userId,
+                exception.getMessage()
+        );
     }
 
     @ParameterizedTest

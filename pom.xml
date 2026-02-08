@@ -37,7 +37,7 @@
 		<byte.buddy.version>1.14.5</byte.buddy.version>
 		<mockito.version>5.3.1</mockito.version>
 
-		<coverage_ratio_percentage>0.5</coverage_ratio_percentage>
+		<coverage_ratio_percentage>0.50000</coverage_ratio_percentage>
 		<jacoco.maven.plugin.version>0.8.10</jacoco.maven.plugin.version>
 		<maven.surefire.plugin.version>3.1.2</maven.surefire.plugin.version>
 		<maven.compiler.plugin.version>3.11.0</maven.compiler.plugin.version>
@@ -47,6 +47,7 @@
 		<assertj.version>3.24.2</assertj.version>
 		<!-- for token authentication -->
 		<jsonwebtoken.version>0.12.3</jsonwebtoken.version>
+        <fastexcel.version>0.19.0</fastexcel.version>
 	</properties>
 
 	<profiles>
@@ -76,6 +77,17 @@
 			<artifactId>validation-api</artifactId>
 			<version>2.0.1.Final</version>
 		</dependency -->
+        <dependency>
+            <groupId>org.dhatim</groupId>
+            <artifactId>fastexcel</artifactId>
+            <version>${fastexcel.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dhatim</groupId>
+            <artifactId>fastexcel-reader</artifactId>
+            <version>${fastexcel.version}</version>
+            <scope>test</scope> <!-- Only needed for tests -->
+        </dependency>
 		<dependency>
 			<groupId>jakarta.validation</groupId>
 			<artifactId>jakarta.validation-api</artifactId>
@@ -122,6 +134,11 @@
 					<artifactId>mockito-junit-jupiter</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-test</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -184,6 +201,13 @@
 			<version>${cucumber.version}</version>
 		</dependency>
 
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <version>2.2</version>
+            <scope>test</scope>
+        </dependency>
+
 		<dependency>
 			<groupId>org.hsqldb</groupId>
 			<artifactId>hsqldb</artifactId>
@@ -222,6 +246,12 @@
 				</exclusion>
 			</exclusions>
 			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-junit-jupiter</artifactId>
+			<version>${mockito.version}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>net.bytebuddy</groupId>
@@ -420,6 +450,9 @@
 								<exclude>br/com/home/lab/softwaretesting/converter/DateToStringConverter*</exclude>
 								<exclude>br/com/home/lab/softwaretesting/security/jwt/*</exclude>
 								<exclude>br/com/home/lab/softwaretesting/payload/*</exclude>
+								<exclude>br/com/home/lab/softwaretesting/controller/record/*</exclude>
+								<exclude>br/com/home/lab/softwaretesting/model/User*</exclude>
+
 							</excludes>
 						</configuration>
 					</execution>

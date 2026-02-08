@@ -1,30 +1,14 @@
 package br.com.home.lab.softwaretesting.controller;
 
-import br.com.home.lab.softwaretesting.controller.record.BuscaForm;
-import br.com.home.lab.softwaretesting.controller.record.LancamentoRecord;
-import br.com.home.lab.softwaretesting.controller.record.ResultadoRecord;
-import br.com.home.lab.softwaretesting.model.Categoria;
-import br.com.home.lab.softwaretesting.model.Lancamento;
-import br.com.home.lab.softwaretesting.model.ModelValidator;
-import br.com.home.lab.softwaretesting.payload.MessageResponse;
-import br.com.home.lab.softwaretesting.service.LancamentoService;
-import br.com.home.lab.softwaretesting.util.Constantes;
-import lombok.NonNull;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import javax.validation.ConstraintViolation;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.EnumSet;
-import java.util.Set;
-import java.util.stream.Collectors;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/entries")
 public class LancamentoController {
-
+/*
     @NonNull
     private LancamentoService lancamentoService;
     private final EnumSet<Categoria> categorias = EnumSet.allOf(Categoria.class);
@@ -96,5 +80,5 @@ public class LancamentoController {
 
         lancamentoService.truncateTable();
         return ResponseEntity.ok().body(new MessageResponse("all.entries.have.been.removed"));
-    }
+    } */
 }

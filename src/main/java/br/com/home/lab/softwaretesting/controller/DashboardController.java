@@ -68,7 +68,7 @@ public class DashboardController {
     }
 
 
-    private Date initialDate(Date dataInicial){
+    protected Date initialDate(Date dataInicial){
         if(dataInicial == null) {
             dataInicial = Date.from(LocalDate.now()
                     .with(TemporalAdjusters.firstDayOfMonth())
@@ -78,7 +78,7 @@ public class DashboardController {
         return dataInicial;
     }
 
-    private Date finalDate(Date dataFinal){
+    protected Date finalDate(Date dataFinal){
         if(dataFinal == null) {
             dataFinal = Date.from(LocalDate.now()
                     .with(TemporalAdjusters.lastDayOfMonth())
@@ -89,10 +89,10 @@ public class DashboardController {
     }
 
     @RequestMapping("/tableChart")
-    public ResponseEntity<List<List<Object>>> tableData(@RequestParam("startDate")
+    public ResponseEntity<List<List<Object>>> tableData(@RequestParam(value = "startDate", required = false)
                                            @DateTimeFormat(pattern = Constantes.yyyy_MMM_dd_DASH)
                                            Date dataInicial,
-                                       @RequestParam("endDate")
+                                       @RequestParam(value = "endDate", required = false)
                                            @DateTimeFormat(pattern = Constantes.yyyy_MMM_dd_DASH)
                                            Date dataFinal){
         return ResponseEntity.ok(getTableData(initialDate(dataInicial), finalDate(dataFinal)));
@@ -100,14 +100,14 @@ public class DashboardController {
 
 
     @RequestMapping("/doughnutChart")
-    public ResponseEntity<List<List<Object>>> doughnutChart(@RequestParam("startDate")
+    public ResponseEntity<List<List<Object>>> doughnutChart(@RequestParam(value = "startDate", required = false)
                                            @DateTimeFormat(pattern = Constantes.yyyy_MMM_dd_DASH)
                                             Date dataInicial,
-                                           @RequestParam("endDate")
+                                           @RequestParam(value = "endDate", required = false)
                                            @DateTimeFormat(pattern = Constantes.yyyy_MMM_dd_DASH)
                                             Date dataFinal){
 
-        return ResponseEntity.ok(getChartDataDougnt(dataInicial, dataFinal));
+        return ResponseEntity.ok(getChartDataDougnt(initialDate(dataInicial), finalDate(dataFinal)));
     }
 
 }

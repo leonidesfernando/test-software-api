@@ -169,8 +169,13 @@ public class EntryService {
     public ResultRecord ajaxSearch(FormSearch formSearch) {
         final var itemBusca = formSearch.searchItem();
         final var page = formSearch.page() > 0 ? formSearch.page() : 1;
-        final User loggedUser = userRepository.findById(formSearch.userId())
-                .orElseThrow(() -> new IllegalStateException("Deveria ter o usuário pelo id: " + formSearch.userId()));
+        final Optional<User> optUser = userRepository.findById(formSearch.userId());
+        if (optUser.isEmpty()) {
+            throw new IllegalStateException(
+                    "Deveria ter o usuário pelo id: " + formSearch.userId()
+            );
+        }
+        final User loggedUser = optUser.get();
 
         if(formSearch.searchOnlyCurrentMonth()){
             return getResultado(buscaTodosMesCorrente(page, itemBusca, loggedUser), contaCurrentMonth(itemBusca, loggedUser), itemBusca, page);
@@ -215,8 +220,16 @@ public class EntryService {
 
     public Lancamento searchById(Long id) {
         Optional<Lancamento> opt = lancamentoRepository.findById(id);
-        return opt.orElseThrow(() -> new IllegalStateException("Deveria ter o Lancamento pelo id: " + id));
+
+        if (opt.isEmpty()) {
+            throw new IllegalStateException(
+                    "Deveria ter o Lancamento pelo id: " + id
+            );
+        }
+
+        return opt.get();
     }
+
 
     public BigDecimal getTotalRenda(final List<Lancamento> lancamentos) {
         return somaValoresPorTipo(lancamentos, TipoLancamento.INCOME);

@@ -1,6 +1,6 @@
 package br.com.home.lab.softwaretesting.controller;
 
-import br.com.home.lab.softwaretesting.service.UserDetailsImpl;
+import br.com.home.lab.softwaretesting.model.User;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,9 +25,13 @@ public class CheckController {
         Authentication authentication = context.getAuthentication();
         try {
             //TODO: Create a interface to return only the username, at the moment we just need it
-            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-            log.info("username: {}", userDetails.getUsername());
-            return ResponseEntity.ok().body(userDetails);
+            log.info("principal: {}", authentication.getPrincipal().toString());
+            String username = authentication.getName();  // Safe and always works
+            User user = new User();
+            user.setUsername(username);
+
+            log.info("username: {}", user);
+            return ResponseEntity.ok(user);
         }catch (Exception e){
             return ResponseEntity.notFound().build();
         }

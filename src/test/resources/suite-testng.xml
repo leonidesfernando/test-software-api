@@ -11,10 +11,16 @@
             <class name="br.com.home.lab.softwaretesting.service.EntryServiceTest"></class>
         </classes>
     </test>
-    <test name="Testin Models">
+    <test name="Testing Models">
         <packages>
             <package name="br.com.home.lab.softwaretesting.model"></package>
         </packages>
+    </test>
+
+    <test name="Testing Excel">
+        <classes>
+            <class name ="br.com.home.lab.softwaretesting.excel.exporter.FastexcelExporterTest"/>
+        </classes>
     </test>
 
     <test name="Testing Converters">

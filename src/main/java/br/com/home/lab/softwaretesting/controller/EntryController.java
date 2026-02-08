@@ -5,6 +5,7 @@ import br.com.home.lab.softwaretesting.controller.record.EntryRecord;
 import br.com.home.lab.softwaretesting.controller.record.FormSearch;
 import br.com.home.lab.softwaretesting.controller.record.ResultRecord;
 import br.com.home.lab.softwaretesting.controller.record.UserIDRecord;
+import br.com.home.lab.softwaretesting.excel.exporter.FastexcelExporter;
 import br.com.home.lab.softwaretesting.model.Lancamento;
 import br.com.home.lab.softwaretesting.model.ModelValidator;
 import br.com.home.lab.softwaretesting.payload.MessageResponse;
@@ -12,6 +13,8 @@ import br.com.home.lab.softwaretesting.repository.UserRepository;
 import br.com.home.lab.softwaretesting.service.EntryService;
 import br.com.home.lab.softwaretesting.util.Constantes;
 import lombok.NonNull;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -24,12 +27,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.ConstraintViolation;
+import java.io.ByteArrayOutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin(origins = "*", maxAge = 3600, exposedHeaders = {"Content-Disposition"})
 @RestController
 @RequestMapping("/api/entries")
 public class EntryController {
@@ -40,9 +44,12 @@ public class EntryController {
     @NonNull
     private final UserRepository userRepository;
 
-    public EntryController(EntryService entryService, UserRepository userRepository){
+    private final FastexcelExporter<ResultRecord> fastExcelExporter;
+
+    public EntryController(EntryService entryService, UserRepository userRepository, FastexcelExporter<ResultRecord> fastExcelExporter) {
         this.entryService = entryService;
         this.userRepository = userRepository;
+        this.fastExcelExporter = fastExcelExporter;
     }
 
 
@@ -57,6 +64,34 @@ public class EntryController {
     public ResponseEntity<ResultRecord> ajaxSearch(@RequestBody FormSearch formSearch){
         ResultRecord result = entryService.ajaxSearch(formSearch);
         return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/export")
+    public ResponseEntity<byte[]> exportExcel(@RequestBody FormSearch formSearch) {
+
+        var responseEntity = AuthController.isLoggedUserForbidden(formSearch.userId());
+        if(responseEntity != null){
+            return null;
+        }
+
+        ResultRecord result = entryService.ajaxSearch(formSearch);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(1024 * 1024);  // Pre-size
+        try {
+            fastExcelExporter.write(result, baos);
+        } catch (Exception e) {
+            throw new IllegalStateException("Failed", e);
+        }
+
+        String filename = fastExcelExporter.generateFileName();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);  // Binary-safe
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
+        headers.setContentLength(baos.size());  // Explicit length
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(baos.toByteArray());
     }
 
     @PostMapping("/add")
@@ -131,7 +166,7 @@ public class EntryController {
     }
 
     @DeleteMapping(value = "/removeAll")
-    public ResponseEntity<MessageResponse> removeAll(@RequestBody UserIDRecord user){
+    public ResponseEntity<MessageResponse> removeAll(@RequestBody   UserIDRecord user){
         var responseEntity = AuthController.isLoggedUserForbidden(user.id());
         if(responseEntity != null){
             return responseEntity;

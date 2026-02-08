@@ -3,9 +3,6 @@ package br.com.home.lab.softwaretesting.controller;
 
 import br.com.home.lab.softwaretesting.controller.record.UserEmailRecord;
 import br.com.home.lab.softwaretesting.controller.record.UserIDRecord;
-import br.com.home.lab.softwaretesting.model.ERole;
-import br.com.home.lab.softwaretesting.model.Role;
-import br.com.home.lab.softwaretesting.model.User;
 import br.com.home.lab.softwaretesting.payload.JwtResponse;
 import br.com.home.lab.softwaretesting.payload.LoginRequest;
 import br.com.home.lab.softwaretesting.payload.MessageResponse;
@@ -13,6 +10,7 @@ import br.com.home.lab.softwaretesting.payload.SignupRequest;
 import br.com.home.lab.softwaretesting.repository.RoleRepository;
 import br.com.home.lab.softwaretesting.repository.UserRepository;
 import br.com.home.lab.softwaretesting.security.jwt.JwtUtils;
+import br.com.home.lab.softwaretesting.service.RegisterUserService;
 import br.com.home.lab.softwaretesting.service.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -33,9 +31,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static br.com.home.lab.softwaretesting.util.Constantes.BEARER;
 
@@ -55,10 +51,14 @@ public class AuthController {
 
     private PasswordEncoder passwordEncoder;
 
-    public AuthController(AuthenticationManager authenticationManager, JwtUtils jwtUtil, PasswordEncoder passwordEncoder){
+    @Autowired
+    private RegisterUserService registerUserService;
+
+    public AuthController(AuthenticationManager authenticationManager, JwtUtils jwtUtil, PasswordEncoder passwordEncoder, RegisterUserService registerUserService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.passwordEncoder = passwordEncoder;
+        this.registerUserService = registerUserService;
     }
 
     @PostMapping("/signin")
@@ -73,10 +73,19 @@ public class AuthController {
                 .stream()
                 .map(GrantedAuthority::getAuthority)
                 .toList();
-        JwtResponse res = new JwtResponse(jwt, BEARER, userDetails.getId(), userDetails.getUsername(),
+        JwtResponse res = new JwtResponse(jwt, BEARER, userDetails.getId(), userDetails.getName(),  userDetails.getUsername(),
                 userDetails.getEmail(), roles);
         return ResponseEntity.ok(res);
     }
+
+    @PostMapping("/signup")
+    public ResponseEntity<MessageResponse> registerUser(
+            @Valid @RequestBody SignupRequest request) {
+
+        registerUserService.registerUser(request);
+        return ResponseEntity.ok(new MessageResponse("user.registered.successfully"));
+    }
+
 
 
     @PostMapping("/signout")
@@ -85,60 +94,6 @@ public class AuthController {
         ResponseCookie cookie = jwtUtil.getCleanJwtCookie();
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(new MessageResponse("user.signed.out"));
-    }
-
-    @PostMapping("/signup")
-    public ResponseEntity<MessageResponse> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-        if (Boolean.TRUE.equals(userRepository.existsByUsername(signUpRequest.username()))) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("username.taken"));
-        }
-
-        if (Boolean.TRUE.equals(userRepository.existsByEmail(signUpRequest.email()))) {
-            return ResponseEntity
-                    .badRequest()
-                    .body(new MessageResponse("email.taken"));
-        }
-
-        // Create new user's account
-        User user = new User(signUpRequest.name(), signUpRequest.username(),
-                signUpRequest.email(),
-                passwordEncoder.encode(signUpRequest.password()));
-
-        Set<String> strRoles = signUpRequest.roles();
-        Set<Role> roles = new HashSet<>();
-
-        if (strRoles == null) {
-            Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                    .orElseThrow(() -> new RuntimeException("Error: Role user is not found."));
-            roles.add(userRole);
-        } else {
-            strRoles.forEach(role -> {
-                switch (role) {
-                    case "admin":
-                        Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN)
-                                .orElseThrow(() -> new RuntimeException("Error: Role admin is not found."));
-                        roles.add(adminRole);
-
-                        break;
-                    case "mod":
-                        Role modRole = roleRepository.findByName(ERole.ROLE_MODERATOR)
-                                .orElseThrow(() -> new RuntimeException("Error: Role moderator is not found."));
-                        roles.add(modRole);
-
-                        break;
-                    default:
-                        Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                                .orElseThrow(() -> new RuntimeException("Error: Role user is not found."));
-                        roles.add(userRole);
-                }
-            });
-        }
-
-        user.setRoles(roles);
-        userRepository.save(user);
-        return ResponseEntity.ok(new MessageResponse("user.registered.successfully"));
     }
 
     @PostMapping("/findUserByAdmin")
@@ -182,5 +137,4 @@ public class AuthController {
         }
         return null;
     }
-
 }

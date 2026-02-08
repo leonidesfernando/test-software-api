@@ -64,7 +64,7 @@ public class Lancamento {
     @Getter @Setter
     private long id;
 
-    @NotBlank(message = "A descrição deve ser informada")
+    @NotBlank(message = "Description must be informed")
     @Getter
     @Setter
     private String descricao;
